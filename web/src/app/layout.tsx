@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, Tajawal } from "next/font/google";
 import { AppShell } from "@/components/layout/AppShell";
+import { ImageShrinker } from "@/components/layout/ImageShrinker";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { themeInitScript } from "@/components/layout/ThemeToggle";
 import { TopBar } from "@/components/layout/TopBar";
@@ -46,6 +47,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-screen font-sans antialiased">
+        <ImageShrinker />
         <AppShell
           sidebar={<Sidebar user={user} unread={unread} />}
           topbar={<TopBar user={user} unread={unread} />}
