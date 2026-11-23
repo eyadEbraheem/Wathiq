@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from 'src/auth/auth.module';
+import { clientIp } from 'src/common/utils/client-ip';
 import { BadgesModule } from 'src/badges/badges.module';
 import { CollaborationsModule } from 'src/collaborations/collaborations.module';
 import { CommentsModule } from 'src/comments/comments.module';
@@ -32,12 +33,18 @@ import { VerificationRequestsModule } from 'src/verification-requests/verificati
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     // Per-IP rate limit: 120 requests/minute by default; auth endpoints set stricter limits.
+    // The IP is the visitor's, also behind the web server and the host's proxy (clientIp).
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        throttlers: [{ name: 'default', ttl: 60_000, limit: 120 }],
-        skipIf: () => config.get<string>('NODE_ENV') === 'test',
-      }),
+      useFactory: (config: ConfigService) => {
+        const proxySecret = config.get<string>('WEB_PROXY_SECRET') ?? '';
+        return {
+          throttlers: [{ name: 'default', ttl: 60_000, limit: 120 }],
+          skipIf: () => config.get<string>('NODE_ENV') === 'test',
+          getTracker: (req: Record<string, any>) =>
+            clientIp(req as Parameters<typeof clientIp>[0], proxySecret),
+        };
+      },
     }),
     // Background jobs (overdue event documentation, push notifications).
     ScheduleModule.forRoot(),

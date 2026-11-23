@@ -5,6 +5,8 @@ import { NextResponse, type NextRequest } from "next/server";
 // (Server Components cannot set cookies, so this has to happen here.)
 
 const API_URL = process.env.API_URL ?? "http://localhost:3000/api/v1";
+// Same as lib/api.ts (that file is server-only, so it cannot be imported here).
+const WEB_PROXY_SECRET = process.env.WEB_PROXY_SECRET ?? "";
 const ACCESS = "access";
 const REFRESH = "refresh";
 const MARGIN_SECONDS = 30;
@@ -18,6 +20,15 @@ const options = {
 
 function maxAge(iso: string): number {
   return Math.max(0, Math.floor((Date.parse(iso) - Date.now()) / 1000) - MARGIN_SECONDS);
+}
+
+/** The visitor's IP for the API's rate limit (see proxyHeaders in lib/api.ts). */
+function forwardVisitor(request: NextRequest): Record<string, string> {
+  if (!WEB_PROXY_SECRET) return {};
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip")?.trim();
+  return ip ? { "x-client-ip": ip, "x-proxy-secret": WEB_PROXY_SECRET } : {};
 }
 
 export async function middleware(request: NextRequest) {
@@ -34,7 +45,7 @@ export async function middleware(request: NextRequest) {
   try {
     const res = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...forwardVisitor(request) },
       body: JSON.stringify({ refreshToken: refresh }),
       cache: "no-store",
     });
