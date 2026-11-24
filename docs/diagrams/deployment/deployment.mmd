@@ -1,0 +1,21 @@
+flowchart TB
+subgraph Clients
+B[Browser]
+M[Expo Android / iOS]
+end
+subgraph App
+W[Next.js Web :3001]
+N[NestJS API :3000]
+L[Local Storage]
+end
+subgraph Services
+D[(PostgreSQL)]
+S[SMTP]
+P[Expo Push]
+end
+B --> W --> N
+M --> N
+N --> D
+N --> L
+N --> S
+N --> P
