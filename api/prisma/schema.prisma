@@ -1,0 +1,1087 @@
+// Civil Society Hub — initial Prisma schema (PostgreSQL)
+//
+// Core model:
+// - Every piece of published content is a `Post`. An event is a Post with kind = EVENT plus a 1:1
+//   `Event` row. A humanitarian case is a Post with a 1:1 `CaseDetails` row. Comments, upvotes,
+//   reports and collaborations therefore attach to one table only.
+// - Only verified accounts (users.verified_kind IS NOT NULL) can publish. Enforced in the service
+//   layer.
+// - Business rules marked "service" are enforced in NestJS services inside transactions. Rules
+//   marked "migration" also get a raw-SQL partial unique index added by hand to the migration file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum VerifiedKind {
+  ORGANIZATION
+  INDIVIDUAL
+}
+
+enum Locale {
+  ar
+  en
+}
+
+// The 14 Syrian governorates. Display names live in packages/shared i18n.
+enum Governorate {
+  DAMASCUS
+  RIF_DIMASHQ
+  ALEPPO
+  HOMS
+  HAMA
+  LATAKIA
+  TARTUS
+  IDLIB
+  RAQQA
+  DEIR_EZ_ZOR
+  HASAKAH
+  DARAA
+  SUWAYDA
+  QUNEITRA
+}
+
+enum EducationLevel {
+  NONE
+  PRIMARY
+  PREPARATORY
+  SECONDARY
+  INSTITUTE // معهد / دبلوم
+  BACHELOR
+  MASTER
+  DOCTORATE
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED // removed by the team after approval
+}
+
+enum OtpChannel {
+  EMAIL
+  SMS
+}
+
+// Sign-up verification uses PendingSignup, not OtpCode (no User row exists yet).
+enum OtpPurpose {
+  CONTACT_VERIFY // adding / changing email or phone from settings
+  PASSWORD_RESET
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DocumentType {
+  ID_CARD
+  PASSPORT
+  SUPPORTING
+  // One of the papers an organization must send (ORGANIZATION_PAPERS in packages/shared);
+  // `slot` on the document says which one.
+  ORGANIZATION_PAPER
+}
+
+enum PostKind {
+  POST
+  EVENT
+}
+
+enum PostStatus {
+  PUBLISHED
+  HIDDEN // hidden by admin or pending fraud review
+  DELETED
+}
+
+enum MediaPhase {
+  MAIN // media attached when the post or event is published
+  DOCUMENTATION // event documentation media (after the event)
+}
+
+enum EventStatus {
+  OPEN // accepting applications
+  CLOSED // applications closed, event not documented yet
+  COMPLETED // documentation published (required before badges)
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum BadgeStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum CollaborationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum PublishRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum Attribution {
+  PUBLISHER // published under the verified account's name
+  REQUESTER // published crediting the requesting user
+}
+
+enum CommentStatus {
+  VISIBLE
+  HIDDEN
+  DELETED
+}
+
+enum ReportTarget {
+  POST
+  COMMENT
+  USER
+}
+
+enum ReportReason {
+  FRAUD
+  OFFENSIVE
+  SPAM
+  MISLEADING
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  FOLLOWED_ACCOUNT_POSTED
+  SECTION_NEW_POST
+  TOPIC_NEW_POST
+  COLLAB_INVITED
+  COLLAB_ACCEPTED
+  EVENT_APPLICATION_RECEIVED
+  EVENT_APPLICATION_DECIDED
+  EVENT_DOCUMENTED
+  EVENT_DOCUMENTATION_OVERDUE // sent to admins
+  BADGE_REQUESTED
+  BADGE_DECIDED
+  COMMENT_ON_POST
+  COMMENT_REPLY
+  PUBLISH_REQUEST_RECEIVED
+  PUBLISH_REQUEST_DECIDED
+  VERIFICATION_DECIDED
+  TEAM_MEMBERSHIP_REQUESTED
+  TEAM_MEMBERSHIP_DECIDED
+  CONTENT_MODERATED
+  EVENT_ROLE_CHANGED // an accepted volunteer was moved to another role
+  EVENT_CANCELLED // sent to pending and accepted applicants
+  EVENT_APPLICATION_WITHDRAWN // sent to the organizer
+  WEEKLY_HIGHLIGHT // "organization of the week": to the winner and its followers
+}
+
+enum OpportunityMode {
+  ONLINE
+  IN_PERSON
+  HYBRID
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Users & auth
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           Int     @id @default(autoincrement())
+  name         String
+  // Sign-up needs only one of email / phone (+ password + OTP). Login accepts either identifier
+  // with the password. The other one can be added and verified later from settings.
+  // A contact is written here ONLY after its OTP is confirmed (see PendingSignup / OtpCode).
+  email        String? @unique
+  phone        String? @unique // stored in E.164 format, e.g. +9639XXXXXXXX
+  passwordHash String  @map("password_hash") // set to "" on account deletion
+
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+
+  role   UserRole @default(USER)
+  locale Locale   @default(ar)
+
+  avatarUrl             String          @default("") @map("avatar_url")
+  bio                   String          @default("")
+  // Profile collected in the onboarding wizard after sign-up (optional except interests).
+  // Each group below has its own visibility switch in profile settings (privacy-first defaults).
+  // Required at sign-up: users must be 13+ (service). Age is always computed from this.
+  // For a verified ORGANIZATION it holds the founding date (set on verification approval);
+  // age-based rules never apply to organizations.
+  birthDate             DateTime        @map("birth_date") @db.Date
+  governorate           Governorate?
+  city                  String          @default("")
+  neighborhood          String          @default("")
+  educationLevel        EducationLevel? @map("education_level")
+  fieldOfStudy          String          @default("") @map("field_of_study")
+  workField             String          @default("") @map("work_field")
+  onboardingCompletedAt DateTime?       @map("onboarding_completed_at")
+  // Home section. Must be one of the user's section interests (service); the user can change it.
+  // null = humanitarian.
+  primarySectionId      Int?            @map("primary_section_id")
+
+  // Profile visibility settings. Apply to the public profile and to event organizers reviewing
+  // applications alike. For users under 18 these fields are always hidden, whatever the switches.
+  showAddress   Boolean @default(false) @map("show_address") // governorate, city, neighborhood
+  showAge       Boolean @default(false) @map("show_age") // age only, never the full birth date
+  showEducation Boolean @default(false) @map("show_education") // level + field of study
+  showWorkField Boolean @default(false) @map("show_work_field")
+  showTeams     Boolean @default(true) @map("show_teams") // approved team memberships
+  // Appear in verified accounts' people search (on by default; under-18 users included, with
+  // their optional fields still hidden).
+  showInSearch  Boolean @default(true) @map("show_in_search")
+  // Verified accounts can hide their rating average; the public then sees "rating hidden".
+  hideRating    Boolean @default(false) @map("hide_rating")
+  // `name` after Arabic normalization (same rules as BannedWord). Kept in sync by the service
+  // whenever the name changes; used for name search.
+  searchName    String  @default("") @map("search_name")
+  // Secret part of the public CV link (shown as a QR on the web). null = the CV is not shared.
+  // Making a new link replaces it, so the old link stops working at once.
+  cvShareToken  String? @unique @map("cv_share_token")
+
+  // null = regular account. Set only by an admin approving a VerificationRequest.
+  verifiedKind           VerifiedKind? @map("verified_kind")
+  verifiedAt             DateTime?     @map("verified_at")
+  // Signed up as an organization and not approved yet: the account can only browse, edit
+  // its own settings and send its verification request (birthDate is the founding date).
+  // Cleared when an admin approves its ORGANIZATION verification request.
+  pendingOrganization    Boolean       @default(false) @map("pending_organization")
+  isPartner              Boolean       @default(false) @map("is_partner")
+  // Verified accounts can switch off incoming publish requests.
+  acceptsPublishRequests Boolean       @default(true) @map("accepts_publish_requests")
+  // The platform's own account (owned by the app owner). Exactly one row (migration:
+  //   CREATE UNIQUE INDEX ... ON users(is_official) WHERE is_official = true).
+  isOfficial             Boolean       @default(false) @map("is_official")
+
+  // Verification is never revoked; admins suspend instead.
+  isSuspended Boolean   @default(false) @map("is_suspended")
+  // Soft delete (app-store requirement). On deletion the service anonymizes the row: name ->
+  // deleted label, email/phone -> null, password/profile/avatar cleared, tokens revoked, devices
+  // removed. Content stays and is shown under "deleted account". Users are never hard-deleted.
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  primarySection Section? @relation("PrimarySection", fields: [primarySectionId], references: [id], onDelete: SetNull)
+
+  refreshTokens         RefreshToken[]
+  otpCodes              OtpCode[]
+  devices               PushDevice[]
+  verificationRequests  VerificationRequest[] @relation("VerificationRequester")
+  reviewedVerifications VerificationRequest[] @relation("VerificationReviewer")
+
+  interests       UserSectionInterest[]
+  topicInterests  UserTopicInterest[]
+  teamMemberships TeamMembership[]      @relation("MembershipUser")
+  teamMembers     TeamMembership[]      @relation("MembershipTeam")
+  following       Follow[]              @relation("Follower")
+  followers       Follow[]              @relation("Following")
+
+  posts                   Post[]             @relation("PostAuthor")
+  creditedPosts           Post[]             @relation("PostCredited")
+  applications            EventApplication[] @relation("Applicant")
+  decidedApplications     EventApplication[] @relation("ApplicationDecider")
+  badges                  Badge[]            @relation("BadgeHolder")
+  decidedBadges           Badge[]            @relation("BadgeDecider")
+  sentInvites             Collaboration[]    @relation("CollabInviter")
+  receivedInvites         Collaboration[]    @relation("CollabInvitee")
+  sentPublishRequests     PublishRequest[]   @relation("PublishRequester")
+  receivedPublishRequests PublishRequest[]   @relation("PublishTarget")
+  comments                Comment[]
+  upvotes                 Upvote[]
+  reportsFiled            Report[]           @relation("Reporter")
+  reportsAgainst          Report[]           @relation("ReportedUser")
+  reportsResolved         Report[]           @relation("ReportResolver")
+  bannedWordsAdded        BannedWord[]
+  notifications           Notification[]     @relation("NotificationRecipient")
+  causedNotifications     Notification[]     @relation("NotificationActor")
+  specialties             UserSpecialty[]
+  ratingsGiven            EventRating[]      @relation("RatingRater")
+  ratingsReceived         EventRating[]      @relation("RatingOrganizer")
+  weeklyHighlights        WeeklyHighlight[]  @relation("WeeklyHighlights")
+
+  @@index([searchName])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  tokenHash  String    @unique @map("token_hash")
+  deviceInfo String    @default("") @map("device_info")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// Sign-up waiting for its OTP. No User row exists until the code is confirmed, so an unconfirmed
+// email/phone never blocks its real owner. Several pending rows may share the same contact
+// (no unique constraint). On confirmation, in one transaction: check no User already has the
+// contact, create the User with emailVerifiedAt/phoneVerifiedAt set, delete all pending rows for
+// that contact. A scheduled job deletes expired rows.
+model PendingSignup {
+  id           Int        @id @default(autoincrement())
+  name         String
+  birthDate    DateTime   @map("birth_date") @db.Date
+  email        String?
+  phone        String?
+  passwordHash String     @map("password_hash")
+  // Signing up as an organization: name is the organization's, birthDate its founding date.
+  organization Boolean    @default(false)
+  locale       Locale     @default(ar)
+  channel      OtpChannel
+  codeHash     String     @map("code_hash")
+  attempts     Int        @default(0)
+  expiresAt    DateTime   @map("expires_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([phone])
+  @@index([expiresAt])
+  @@map("pending_signups")
+}
+
+// One-time codes for existing users: password reset, and verifying an email/phone added from
+// settings. Only the hash is stored.
+model OtpCode {
+  id         Int        @id @default(autoincrement())
+  userId     Int        @map("user_id")
+  channel    OtpChannel
+  purpose    OtpPurpose
+  // The email / phone the code was sent to. For CONTACT_VERIFY it is copied onto the user only
+  // after confirmation.
+  target     String
+  codeHash   String     @map("code_hash")
+  attempts   Int        @default(0)
+  expiresAt  DateTime   @map("expires_at")
+  consumedAt DateTime?  @map("consumed_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("otp_codes")
+}
+
+model PushDevice {
+  id         Int            @id @default(autoincrement())
+  userId     Int            @map("user_id")
+  pushToken  String         @unique @map("push_token") // Expo push token
+  platform   DevicePlatform
+  lastSeenAt DateTime       @default(now()) @map("last_seen_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_devices")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Account verification (reviewed by platform admins only)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Rules:
+// - At most one PENDING request per user (service + migration:
+//   CREATE UNIQUE INDEX ... ON verification_requests(user_id) WHERE status = 'PENDING').
+// - A rejected user may submit a new request.
+// - On decision, document files are deleted from storage and `purgedAt` is set.
+model VerificationRequest {
+  id              Int                @id @default(autoincrement())
+  userId          Int                @map("user_id")
+  kind            VerifiedKind
+  status          VerificationStatus @default(PENDING)
+  contactPhone    String             @map("contact_phone")
+  // Required for kind = ORGANIZATION (service); copied to users.birth_date on approval.
+  foundedAt       DateTime?          @map("founded_at") @db.Date
+  details         String             @default("") // free text about previous volunteer work
+  links           String[]           @default([]) // references / previous work URLs
+  reviewedById    Int?               @map("reviewed_by_id")
+  reviewedAt      DateTime?          @map("reviewed_at")
+  rejectionReason String             @default("") @map("rejection_reason")
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  user       User                   @relation("VerificationRequester", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User?                  @relation("VerificationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  documents  VerificationDocument[]
+
+  @@index([status, createdAt])
+  @@map("verification_requests")
+}
+
+// Stored in PRIVATE object storage. Never exposed through a public URL; admins view through
+// short-lived signed URLs only.
+model VerificationDocument {
+  id         Int          @id @default(autoincrement())
+  requestId  Int          @map("request_id")
+  type       DocumentType
+  // ORGANIZATION_PAPER only: which paper (0-based index into ORGANIZATION_PAPERS).
+  slot       Int?
+  storageKey String       @map("storage_key")
+  fileName   String       @map("file_name")
+  mimeType   String       @map("mime_type")
+  sizeBytes  Int          @map("size_bytes")
+  purgedAt   DateTime?    @map("purged_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  request VerificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("verification_documents")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sections, interests, follows
+// ─────────────────────────────────────────────────────────────────────────────
+
+// The 4 fixed sections, seeded: environment, animal-welfare, humanitarian, community.
+// `logoUrl` is also the badge image for events in this section.
+model Section {
+  id        Int    @id @default(autoincrement())
+  slug      String @unique
+  nameAr    String @map("name_ar")
+  nameEn    String @map("name_en")
+  logoUrl   String @map("logo_url")
+  sortOrder Int    @default(0) @map("sort_order")
+
+  posts           Post[]
+  interests       UserSectionInterest[]
+  publishRequests PublishRequest[]
+  topics          Topic[]
+  primaryForUsers User[]                @relation("PrimarySection")
+
+  @@map("sections")
+}
+
+// Drives section notifications. The home section is User.primarySectionId (one of these).
+model UserSectionInterest {
+  userId    Int      @map("user_id")
+  sectionId Int      @map("section_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, sectionId])
+  @@index([sectionId])
+  @@map("user_section_interests")
+}
+
+// Sub-interests inside a section, e.g. environment: tree planting, recycling, clean-ups;
+// animal welfare: stray feeding, adoption, vet care. Seeded and managed by admins.
+model Topic {
+  id        Int     @id @default(autoincrement())
+  sectionId Int     @map("section_id")
+  slug      String  @unique
+  nameAr    String  @map("name_ar")
+  nameEn    String  @map("name_en")
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  section   Section             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  interests UserTopicInterest[]
+  posts     PostTopic[]
+
+  @@index([sectionId])
+  @@map("topics")
+}
+
+model UserTopicInterest {
+  userId    Int      @map("user_id")
+  topicId   Int      @map("topic_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([userId, topicId])
+  @@index([topicId])
+  @@map("user_topic_interests")
+}
+
+// Posts and events are tagged with topics (topic must belong to the post's section, service).
+// Used for recommendations and topic-level notifications.
+model PostTopic {
+  postId  Int @map("post_id")
+  topicId Int @map("topic_id")
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([postId, topicId])
+  @@index([topicId])
+  @@map("post_topics")
+}
+
+// A user's membership in a volunteer team (current or past). The team must be a verified
+// account on the platform. The user sends a request; it appears on their profile only after the
+// team approves it. The team can remove an approved membership later.
+// At most one PENDING or APPROVED membership per user/team (service + migration:
+//   CREATE UNIQUE INDEX ... ON team_memberships(user_id, team_id)
+//   WHERE status IN ('PENDING','APPROVED')).
+model TeamMembership {
+  id          Int              @id @default(autoincrement())
+  userId      Int              @map("user_id")
+  teamId      Int              @map("team_id")
+  status      MembershipStatus @default(PENDING)
+  role        String           @default("")
+  description String           @default("")
+  startYear   Int?             @map("start_year")
+  endYear     Int?             @map("end_year") // null = still a member
+  decidedAt   DateTime?        @map("decided_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  user User @relation("MembershipUser", fields: [userId], references: [id], onDelete: Cascade)
+  team User @relation("MembershipTeam", fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([teamId, status])
+  @@map("team_memberships")
+}
+
+// Only verified accounts can be followed (service).
+model Follow {
+  followerId  Int      @map("follower_id")
+  followingId Int      @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+// Free-text specialties of verified accounts (e.g. "violence against women"), beyond sections.
+// `normalized` is the name after Arabic normalization; a new specialty reuses an existing row
+// with the same normalized value, so the same specialty is never stored twice.
+model Specialty {
+  id         Int      @id @default(autoincrement())
+  name       String
+  normalized String   @unique
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  users UserSpecialty[]
+
+  @@map("specialties")
+}
+
+model UserSpecialty {
+  userId      Int      @map("user_id")
+  specialtyId Int      @map("specialty_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, specialtyId])
+  @@index([specialtyId])
+  @@map("user_specialties")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Content: posts, events, humanitarian cases
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Post {
+  id        Int        @id @default(autoincrement())
+  authorId  Int        @map("author_id") // the verified account that published it
+  sectionId Int        @map("section_id")
+  kind      PostKind   @default(POST)
+  status    PostStatus @default(PUBLISHED)
+  title     String
+  body      String
+
+  // Set when published from a PublishRequest with attribution = REQUESTER.
+  creditedUserId Int? @map("credited_user_id")
+
+  // Denormalized counters for "most upvoted" sorting; updated in the same transaction.
+  upvoteCount  Int @default(0) @map("upvote_count")
+  commentCount Int @default(0) @map("comment_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  author         User                @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  creditedUser   User?               @relation("PostCredited", fields: [creditedUserId], references: [id], onDelete: SetNull)
+  section        Section             @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  media          PostMedia[]
+  topics         PostTopic[]
+  event          Event?
+  caseDetails    CaseDetails?
+  opportunity    OpportunityDetails?
+  comments       Comment[]
+  upvotes        Upvote[]
+  collaborations Collaboration[]
+  reports        Report[]
+  publishRequest PublishRequest?
+  notifications  Notification[]
+
+  @@index([sectionId, status, createdAt(sort: Desc)])
+  @@index([sectionId, status, upvoteCount(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+model PostMedia {
+  id         Int        @id @default(autoincrement())
+  postId     Int        @map("post_id")
+  phase      MediaPhase @default(MAIN)
+  storageKey String     @map("storage_key")
+  url        String
+  mimeType   String     @map("mime_type")
+  sortOrder  Int        @default(0) @map("sort_order")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, phase])
+  @@map("post_media")
+}
+
+// Event lifecycle: OPEN -> CLOSED -> COMPLETED, or OPEN -> COMPLETED directly. Never backwards.
+// CANCELLED is allowed from any state, at any time.
+// COMPLETED requires documentation (description + at least one DOCUMENTATION photo).
+// Badges can only be requested once the event is COMPLETED.
+model Event {
+  postId Int @id @map("post_id")
+
+  status              EventStatus @default(OPEN)
+  startsAt            DateTime    @map("starts_at")
+  endsAt              DateTime?   @map("ends_at")
+  applicationDeadline DateTime?   @map("application_deadline")
+  // null = unlimited. Counts ACCEPTED applications only. When accepting reaches capacity, the
+  // event moves OPEN -> CLOSED in the same transaction (lock the event row first).
+  capacity            Int?
+  // Volunteer hours each accepted volunteer earns once the event is COMPLETED. Set by the
+  // organizer, shown on the event, and summed on the volunteer's account and CV.
+  volunteerHours      Int         @map("volunteer_hours")
+  // Set when the event closed itself because it became full. Only such an event reopens
+  // (CLOSED -> OPEN) when a seat frees up before the deadline / start; a hand-closed event
+  // keeps this null and stays closed.
+  autoClosedAt        DateTime?   @map("auto_closed_at")
+
+  governorate  Governorate
+  city         String
+  // null = no limit. Checked against the applicant's age ON THE EVENT DATE (startsAt) (service).
+  minAge       Int?        @map("min_age")
+  locationText String      @default("") @map("location_text")
+  latitude     Float?
+  longitude    Float?
+
+  // Optional questions the creator asks applicants: [{ id, text, required }]
+  applicationQuestions Json @default("[]") @map("application_questions")
+
+  documentation      String    @default("") // after-event description
+  documentedAt       DateTime? @map("documented_at")
+  // Set on create: (endsAt ?? startsAt) + grace period (default 7 days, config).
+  // A scheduled job finds events past this date with no documentation, notifies admins once and
+  // stamps overdueNotifiedAt. Badges stay impossible until the event is COMPLETED.
+  documentationDueAt DateTime  @map("documentation_due_at")
+  overdueNotifiedAt  DateTime? @map("overdue_notified_at")
+
+  post          Post                @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applications  EventApplication[]
+  badges        Badge[]
+  roles         EventRole[]
+  impactMetrics EventImpactMetric[]
+  ratings       EventRating[]
+
+  @@index([status, startsAt])
+  @@index([status, documentationDueAt])
+  @@index([governorate, city])
+  @@map("events")
+}
+
+// Anyone (regular or verified, except the event's own author) can apply.
+model EventApplication {
+  id          Int               @id @default(autoincrement())
+  eventId     Int               @map("event_id")
+  userId      Int               @map("user_id")
+  status      ApplicationStatus @default(PENDING)
+  message     String            @default("")
+  answers     Json              @default("{}") // { questionId: answer }
+  // The role the organizer accepted the applicant into (events with roles only). Set on
+  // ACCEPTED; the organizer may move it to another role with a free seat.
+  roleId      Int?              @map("role_id")
+  decidedById Int?              @map("decided_by_id")
+  decidedAt   DateTime?         @map("decided_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  event       Event                        @relation(fields: [eventId], references: [postId], onDelete: Cascade)
+  user        User                         @relation("Applicant", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy   User?                        @relation("ApplicationDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  badge       Badge?
+  role        EventRole?                   @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  roleChoices EventApplicationRoleChoice[]
+  rating      EventRating?
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@map("event_applications")
+}
+
+// Optional volunteer roles of an event, each with its own seats. When an event has roles, its
+// capacity = sum of seats (service). Seats taken = ACCEPTED applications with this roleId.
+model EventRole {
+  id        Int      @id @default(autoincrement())
+  eventId   Int      @map("event_id")
+  name      String
+  seats     Int
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event        Event                        @relation(fields: [eventId], references: [postId], onDelete: Cascade)
+  applications EventApplication[]
+  choices      EventApplicationRoleChoice[]
+
+  @@unique([eventId, name])
+  @@index([eventId])
+  @@map("event_roles")
+}
+
+// The 1 to 3 roles an applicant asked for, ranked (1 = first choice). The service checks the
+// count and that every role belongs to the same event.
+model EventApplicationRoleChoice {
+  applicationId Int @map("application_id")
+  roleId        Int @map("role_id")
+  rank          Int
+
+  application EventApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  role        EventRole        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([applicationId, roleId])
+  @@unique([applicationId, rank])
+  @@map("event_application_role_choices")
+}
+
+// Numbers added when documenting an event, e.g. "trees planted" = 300. The label is typed by the
+// organizer; `normalized` (Arabic normalization) lets the organizer's profile sum the same
+// metric across events.
+model EventImpactMetric {
+  id         Int    @id @default(autoincrement())
+  eventId    Int    @map("event_id")
+  label      String
+  normalized String
+  value      Int
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  event Event @relation(fields: [eventId], references: [postId], onDelete: Cascade)
+
+  @@unique([eventId, normalized])
+  @@index([normalized])
+  @@map("event_impact_metrics")
+}
+
+// A participant's 1-5 rating of the organizer of an event they took part in (ACCEPTED +
+// COMPLETED). One per application, editable for 30 days after the event's documentedAt.
+// organizerId = the event's author (denormalized for profile averages).
+// Migration CHECK: stars BETWEEN 1 AND 5.
+model EventRating {
+  id            Int      @id @default(autoincrement())
+  eventId       Int      @map("event_id")
+  applicationId Int      @unique @map("application_id")
+  raterId       Int      @map("rater_id")
+  organizerId   Int      @map("organizer_id")
+  stars         Int
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  event       Event            @relation(fields: [eventId], references: [postId], onDelete: Cascade)
+  application EventApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  rater       User             @relation("RatingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  organizer   User             @relation("RatingOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+
+  @@index([organizerId])
+  @@map("event_ratings")
+}
+
+// Requested by a participant with an ACCEPTED application, after the event is COMPLETED.
+// Approved by the event author. Image = section logo; links to the event documentation.
+// One row per application. After REJECTED the participant may request again: the same row goes
+// back to REQUESTED (decidedBy / decidedAt cleared).
+model Badge {
+  id               Int         @id @default(autoincrement())
+  applicationId    Int         @unique @map("application_id")
+  eventId          Int         @map("event_id")
+  userId           Int         @map("user_id")
+  status           BadgeStatus @default(REQUESTED)
+  description      String      @default("") // short text written by the event author on approval
+  isShownOnProfile Boolean     @default(true) @map("is_shown_on_profile")
+  decidedById      Int?        @map("decided_by_id")
+  decidedAt        DateTime?   @map("decided_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  application EventApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  event       Event            @relation(fields: [eventId], references: [postId], onDelete: Cascade)
+  user        User             @relation("BadgeHolder", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy   User?            @relation("BadgeDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([eventId, status])
+  @@map("badges")
+}
+
+// Only for posts in the humanitarian section (service). Optional there: a humanitarian post may
+// also be a normal post. No money passes through the platform.
+model CaseDetails {
+  postId       Int    @id @map("post_id")
+  contactPhone String @map("contact_phone")
+  paymentQrUrl String @default("") @map("payment_qr_url") // e.g. Sham Cash QR image
+  paymentNote  String @default("") @map("payment_note")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("case_details")
+}
+
+// Only for posts in the education section (service), and optional there. An external
+// opportunity (scholarship, internship, job, competition) applied for outside the platform.
+// It shows as closed once `deadline` has passed (computed, never stored).
+model OpportunityDetails {
+  postId         Int             @id @map("post_id")
+  deadline       DateTime?
+  applyUrl       String          @map("apply_url")
+  mode           OpportunityMode
+  location       String          @default("")
+  eligibility    String          @default("") // free text: who can apply
+  minAge         Int?            @map("min_age")
+  maxAge         Int?            @map("max_age")
+  educationLevel EducationLevel? @map("education_level")
+  field          String          @default("") // e.g. engineering
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([deadline])
+  @@map("opportunity_details")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Collaboration & publish requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+// The post author invites any account (regular or verified). On ACCEPTED the invitee is shown on
+// the post and their followers are notified.
+model Collaboration {
+  id          Int                 @id @default(autoincrement())
+  postId      Int                 @map("post_id")
+  inviterId   Int                 @map("inviter_id")
+  inviteeId   Int                 @map("invitee_id")
+  status      CollaborationStatus @default(PENDING)
+  respondedAt DateTime?           @map("responded_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  post    Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  inviter User @relation("CollabInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User @relation("CollabInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, inviteeId])
+  @@index([inviteeId, status])
+  @@map("collaborations")
+}
+
+// A regular user asks a verified account (targetUserId) to publish something, or asks the
+// platform directly (targetUserId = null, handled by admins). The target must have
+// acceptsPublishRequests = true (service). On approval a Post is created and linked.
+// Attribution:
+// - to a verified account: that account decides `attribution` on approval.
+// - to the platform: the requester chooses `requestedAttribution` (their own name, or the
+//   platform's official account) and admins publish accordingly. Platform requests are
+//   published by the official account (User.isOfficial).
+// Humanitarian case requests: `caseContactPhone` is set (and the section must be humanitarian,
+// service). On approval the case fields become the post's CaseDetails.
+model PublishRequest {
+  id                   Int                  @id @default(autoincrement())
+  requesterId          Int                  @map("requester_id")
+  targetUserId         Int?                 @map("target_user_id")
+  sectionId            Int                  @map("section_id")
+  title                String
+  body                 String
+  mediaKeys            String[]             @default([]) @map("media_keys")
+  // Humanitarian case fields (null phone = normal post request).
+  caseContactPhone     String?              @map("case_contact_phone")
+  casePaymentQrKey     String               @default("") @map("case_payment_qr_key") // QR image in storage
+  casePaymentNote      String               @default("") @map("case_payment_note")
+  status               PublishRequestStatus @default(PENDING)
+  requestedAttribution Attribution?         @map("requested_attribution")
+  attribution          Attribution?
+  resultingPostId      Int?                 @unique @map("resulting_post_id")
+  rejectionReason      String               @default("") @map("rejection_reason")
+  decidedAt            DateTime?            @map("decided_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+
+  requester     User    @relation("PublishRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  targetUser    User?   @relation("PublishTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  section       Section @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  resultingPost Post?   @relation(fields: [resultingPostId], references: [id], onDelete: SetNull)
+
+  @@index([targetUserId, status])
+  @@index([requesterId])
+  @@map("publish_requests")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Interaction & moderation
+// ─────────────────────────────────────────────────────────────────────────────
+
+// One level of replies only: a reply's parent must itself have parentId = null (service).
+// Comments containing a banned word (after Arabic normalization) are rejected on create.
+model Comment {
+  id        Int           @id @default(autoincrement())
+  postId    Int           @map("post_id")
+  authorId  Int           @map("author_id")
+  parentId  Int?          @map("parent_id")
+  body      String
+  status    CommentStatus @default(VISIBLE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+  reports Report[]
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+model Upvote {
+  userId    Int      @map("user_id")
+  postId    Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("upvotes")
+}
+
+// Exactly the FK matching `target` is set (migration CHECK constraint:
+//   (target = 'POST' AND post_id IS NOT NULL AND comment_id IS NULL AND reported_user_id IS NULL)
+//   OR (target = 'COMMENT' AND comment_id IS NOT NULL AND post_id IS NULL AND reported_user_id IS NULL)
+//   OR (target = 'USER' AND reported_user_id IS NOT NULL AND post_id IS NULL AND comment_id IS NULL)).
+model Report {
+  id             Int          @id @default(autoincrement())
+  reporterId     Int          @map("reporter_id")
+  target         ReportTarget
+  postId         Int?         @map("post_id")
+  commentId      Int?         @map("comment_id")
+  reportedUserId Int?         @map("reported_user_id")
+  reason         ReportReason
+  details        String       @default("")
+  status         ReportStatus @default(OPEN)
+  resolvedById   Int?         @map("resolved_by_id")
+  resolvedAt     DateTime?    @map("resolved_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  reporter     User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  post         Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment      Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reportedUser User?    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  resolvedBy   User?    @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+// `normalized` is the word after Arabic normalization (unify أ/إ/آ -> ا, ة -> ه, ى -> ي,
+// strip tashkeel and tatweel, lower-case Latin). Matching runs on normalized text.
+model BannedWord {
+  id          Int      @id @default(autoincrement())
+  word        String
+  normalized  String   @unique
+  createdById Int?     @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@map("banned_words")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+// In-app notification rows. Push delivery is sent to the recipient's PushDevices via a background
+// job queue, never inline in the request.
+model Notification {
+  id          Int              @id @default(autoincrement())
+  recipientId Int              @map("recipient_id")
+  actorId     Int?             @map("actor_id")
+  type        NotificationType
+  postId      Int?             @map("post_id")
+  data        Json             @default("{}")
+  readAt      DateTime?        @map("read_at")
+  // Set once the push job has handled the row (sent, or skipped: no device / too old).
+  pushedAt    DateTime?        @map("pushed_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  recipient User  @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  post      Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, readAt, createdAt(sort: Desc)])
+  @@index([pushedAt, createdAt])
+  @@map("notifications")
+}
+
+// "Organization of the week": one row per computed week (Saturday 00:00 to Friday 24:00,
+// Damascus time). The winner is the verified account that brought the most first-time
+// volunteers: accepted people whose first completed event on the platform was documented that
+// week. organizerId is null when nobody reached the minimum (the week is still computed).
+model WeeklyHighlight {
+  id            Int      @id @default(autoincrement())
+  weekStart     DateTime @unique @map("week_start") // Saturday 00:00 Damascus, stored in UTC
+  organizerId   Int?     @map("organizer_id")
+  newVolunteers Int      @default(0) @map("new_volunteers")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  organizer User? @relation("WeeklyHighlights", fields: [organizerId], references: [id], onDelete: SetNull)
+
+  @@index([organizerId])
+  @@map("weekly_highlights")
+}
