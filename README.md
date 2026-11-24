@@ -248,15 +248,15 @@ npx expo start                   # امسح رمز QR بتطبيق Expo Go، أ�
 
 | الحساب | البريد | كلمة السر |
 |---|---|---|
-| مدير المنصة | `demo-admin@wathiq.local` | `DEMO_PASSWORD_VALUE` |
-| جمعية موثّقة | `demo-hope@wathiq.local` | `DEMO_PASSWORD_VALUE` |
-| فريق موثّق | `demo-green@wathiq.local` | `DEMO_PASSWORD_VALUE` |
-| متطوع | `demo-volunteer@wathiq.local` | `DEMO_PASSWORD_VALUE` |
+| مدير المنصة | `demo-admin@wathiq.local` | تُضاف قريباً |
+| جمعية موثّقة | `demo-hope@wathiq.local` | تُضاف قريباً |
+| فريق موثّق | `demo-green@wathiq.local` | تُضاف قريباً |
+| متطوع | `demo-volunteer@wathiq.local` | تُضاف قريباً |
 
 ## رابط العرض وتطبيق الموبايل
 
-- **Demo URL:** DEMO_URL_VALUE
-- **Mobile (APK / Expo):** MOBILE_LINK_VALUE
+- **Demo URL:** يُضاف قريباً
+- **Mobile (APK / Expo):** يُضاف قريباً
 
 ## القيود الحالية
 
