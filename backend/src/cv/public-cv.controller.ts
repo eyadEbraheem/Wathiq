@@ -36,7 +36,7 @@ export class PublicCvController {
     summary:
       'Public key that checks the signed offline copy in a shared CV QR (`offline` of /users/me/cv/share)',
     description:
-      'The QR link ends with `#o=<payload>.<signature>` (base64url). payload = raw-deflated JSON (see OfflineCv in api/src/cv/cv-signer.ts); signature = Ed25519 over the payload bytes. Apps should build this key in, to check copies without internet.',
+      'The QR link ends with `#o=<payload>.<signature>` (base64url). payload = raw-deflated JSON (see OfflineCv in backend/src/cv/cv-signer.ts); signature = Ed25519 over the payload bytes. Apps should build this key in, to check copies without internet.',
   })
   @ApiResponse({
     status: 200,

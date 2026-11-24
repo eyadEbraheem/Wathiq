@@ -52,12 +52,12 @@ SecureStore للجلسة، ImagePicker وDocumentPicker للملفات، Notific
 والموبايل بدون ما تنكتب مرتين. بالبوتكامب كان `api` و `web` مشروعين منفصلين تماماً.
 
 **كيف؟**
-- `package.json` بالجذر فيه `"workspaces": ["packages/*", "api", "web"]`، و `npm install`
+- `package.json` بالجذر فيه `"workspaces": ["packages/*", "backend", "frontend"]`، و `npm install`
   واحد بالجذر بينصّب الكل.
 - الحزمة `@csh/shared` بـ `packages/shared/`، مبنية CommonJS لحتى تشتغل مع Next و Expo و Nest.
   بتنبني لحالها بعد كل `npm install` (`postinstall`).
 - فيها `ApiError` و `Paginated<T>` و `API_PREFIX`، وكل الـ 25 enum من الـ schema كـ `as const`.
-- **انتبه:** الـ enums منسوخة من `api/prisma/schema.prisma`. أي تعديل على enum بالـ schema لازم
+- **انتبه:** الـ enums منسوخة من `backend/prisma/schema.prisma`. أي تعديل على enum بالـ schema لازم
   ينعاد بـ `packages/shared/src/enums.ts`.
 
 **اخترنا npm workspaces** من أول المشروع.
@@ -67,7 +67,7 @@ SecureStore للجلسة، ImagePicker وDocumentPicker للملفات، Notific
 **ليش؟** `docs/CONVENTIONS.md` بيطلبو صراحة. بالبوتكامب كان `strictNullChecks: false` و `noImplicitAny: false`.
 الـ strict بيمسك أخطاء متل نسيان إنو قيمة ممكن تكون `null`.
 
-**كيف؟** `api/tsconfig.json`: `"strict": true` مع `"strictPropertyInitialization": false`
+**كيف؟** `backend/tsconfig.json`: `"strict": true` مع `"strictPropertyInitialization": false`
 (لأن حقول الـ DTOs بتتعبّى من class-validator مش من constructor). باقي الإعدادات متل البوتكامب.
 
 ## 3. كل المسارات تحت `/api/v1`
@@ -75,14 +75,14 @@ SecureStore للجلسة، ImagePicker وDocumentPicker للملفات، Notific
 **ليش؟** `docs/CONVENTIONS.md` (قواعد الموبايل): لما نغيّر الـ API بعدين، نسخ التطبيق القديمة على الموبايلات
 بتضل شغّالة على `v1`.
 
-**كيف؟** سطر واحد بـ `api/src/main.ts`: `app.setGlobalPrefix('api/v1')`.
-Swagger بيضل على `/docs`.
+**كيف؟** سطر واحد بـ `backend/src/main.ts`: `app.setGlobalPrefix('api/v1')`.
+Swagger بيضل على `/api/docs`.
 
 ## 4. Access + Refresh tokens
 
 **ليش؟** `docs/CONVENTIONS.md`: مستخدم الموبايل لازم يضل مسجّل دخول أسابيع. بالبوتكامب كان في JWT واحد بس.
 
-**كيف؟** (`api/src/auth/tokens.service.ts`)
+**كيف؟** (`backend/src/auth/tokens.service.ts`)
 - **Access token:** JWT عادي متل البوتكامب (`@nestjs/jwt`)، بيعيش 15 دقيقة.
 - **Refresh token:** نص عشوائي، بينحفظ بالقاعدة كـ hash (SHA-256) بجدول `refresh_tokens`،
   وبيعيش 30 يوم.
@@ -95,7 +95,7 @@ Swagger بيضل على `/docs`.
 **ليش؟** قرار منتج بـ `docs/CONVENTIONS.md`: ما منحفظ إيميل أو رقم على مستخدم قبل ما يتأكد. هيك ما حدا بيقدر
 يحجز إيميل غيرو. بالبوتكامب كان التسجيل مباشر بإيميل وكلمة سر.
 
-**كيف؟** (`api/src/auth/`)
+**كيف؟** (`backend/src/auth/`)
 - `POST /auth/signup` بيحفظ البيانات بجدول `pending_signups` وبيبعت كود من 6 أرقام.
   الحساب بينعمل بس بعد `POST /auth/signup/verify`.
 - الكود بينحفظ مشفّر (HMAC-SHA256 من `node:crypto`)، وبيخلص بعد 10 دقايق، و 5 محاولات غلط بس.
@@ -110,8 +110,8 @@ Swagger بيضل على `/docs`.
 
 **كيف؟**
 - الحزمة الرسمية من فريق NestJS، ونسختها 6 بتشتغل مع Nest 10.
-- `api/src/app.module.ts`: حد عام 120 طلب بالدقيقة لكل IP.
-- `api/src/auth/auth.controller.ts`: حد أشد، 10 بالدقيقة، على التسجيل وتسجيل الدخول والأكواد
+- `backend/src/app.module.ts`: حد عام 120 طلب بالدقيقة لكل IP.
+- `backend/src/auth/auth.controller.ts`: حد أشد، 10 بالدقيقة، على التسجيل وتسجيل الدخول والأكواد
   (`@Throttle(SENSITIVE)`).
 - الحد بيتعطّل لحالو بالاختبارات (`NODE_ENV=test`).
 - فوقو حدود بالخدمة نفسها: دقيقة بين كل إعادة إرسال كود، و 5 تسجيلات لنفس الإيميل بالساعة.
@@ -123,11 +123,11 @@ Swagger بيضل على `/docs`.
 
 **كيف؟**
 - قاعدة `civil_society_hub_test` بنفس PostgreSQL.
-- ملف `api/.env.test` (مش بـ git) فيه نفس المتغيرات مع رابط قاعدة الاختبار و `NODE_ENV=test`.
-- `api/test/setup-e2e.ts` بيحمّل `.env.test` قبل كل ملف اختبار، وبيرفض يشتغل إذا اسم القاعدة
+- ملف `backend/.env.test` (مش بـ git) فيه نفس المتغيرات مع رابط قاعدة الاختبار و `NODE_ENV=test`.
+- `backend/test/setup-e2e.ts` بيحمّل `.env.test` قبل كل ملف اختبار، وبيرفض يشتغل إذا اسم القاعدة
   ما بيخلص بـ `_test`. هون استعملنا `dotenv` (حزمة تطوير بس، وأصلاً موجودة جوّا `@nestjs/config`).
 - بعد أي migration جديدة لازم تنطبّق على قاعدة الاختبار كمان. الطريقة بـ `docs/RUN-LOCALLY.md`.
-- أدوات مشتركة للاختبارات بـ `api/test/utils/test-app.ts`.
+- أدوات مشتركة للاختبارات بـ `backend/test/utils/test-app.ts`.
 
 ## 8. `@types/bcrypt`
 
@@ -141,16 +141,16 @@ Swagger بيضل على `/docs`.
 **ليش؟** الكود بيستورد بـ `src/...` متل البوتكامب، بس Jest ما بيعرف هالمسار لحالو، فالاختبارات
 يلي بتحمّل `AppModule` كانت رح تفشل.
 
-**كيف؟** `"moduleNameMapper": { "^src/(.*)$": "<rootDir>/src/$1" }` بـ `api/package.json`
-(اختبارات الوحدة) وبـ `api/test/jest-e2e.json`، مع `--runInBand` للـ e2e لأنهن بيشاركوا نفس القاعدة.
+**كيف؟** `"moduleNameMapper": { "^src/(.*)$": "<rootDir>/src/$1" }` بـ `backend/package.json`
+(اختبارات الوحدة) وبـ `backend/test/jest-e2e.json`، مع `--runInBand` للـ e2e لأنهن بيشاركوا نفس القاعدة.
 
 ## 10. الـ pagination الموحّد
 
 **ليش؟** `docs/CONVENTIONS.md`: كل قائمة لازم تنقسم صفحات، لحتى الموبايل ما يحمّل كل شي مرة وحدة.
 
 **كيف؟**
-- `api/src/common/dto/pagination-query.dto.ts`: `?page=&limit=`، والحد الأقصى 100.
-- `api/src/common/utils/paginate.ts`: بيرجّع `{ data, meta: { page, limit, total, totalPages } }`.
+- `backend/src/common/dto/pagination-query.dto.ts`: `?page=&limit=`، والحد الأقصى 100.
+- `backend/src/common/utils/paginate.ts`: بيرجّع `{ data, meta: { page, limit, total, totalPages } }`.
 - أول استعمال: `GET /api/v1/sections`.
 
 ## 11. تخزين الملفات
@@ -164,7 +164,7 @@ Swagger بيضل على `/docs`.
 البوتكامب ما كان فيه رفع ملفات أبداً.
 
 **القرار:** **وحدة تخزين بواجهة وحدة، مع "سوّاق" قابل للتبديل:**
-- **هلق، للتطوير:** سوّاق محلي بيحفظ بمجلد `api/storage/` (مش بـ git). **بدون أي حزمة جديدة**،
+- **هلق، للتطوير:** سوّاق محلي بيحفظ بمجلد `backend/storage/` (مش بـ git). **بدون أي حزمة جديدة**،
   بس `node:fs` و `node:crypto`.
 - **للإنتاج، لاحقاً:** سوّاق S3-compatible. هاد معيار بتدعمو خدمات كتير (AWS S3،
   Cloudflare R2، Backblaze B2، أو MinIO على سيرفرك). بيحتاج حزمة `@aws-sdk/client-s3`، وما رح
@@ -172,7 +172,7 @@ Swagger بيضل على `/docs`.
 - **ليش هيك؟** ما بدنا نختار مزوّد سحابي هلق، لأنو لسا ما في استضافة، وبعض المزوّدين ممكن يكون
   عندن مشاكل بالحسابات أو الدفع من سوريا. وبهالشكل الكود يلي بيرفع ملفات ما بيتغيّر وقت نبدّل.
 
-**كيف انعمل؟** (`api/src/storage/`)
+**كيف انعمل؟** (`backend/src/storage/`)
 - `StorageService` هو الشي الوحيد يلي بتستعملو باقي الوحدات:
   - `save(file, { visibility, allowed, maxBytes })` بيفحص الحجم، وبيفحص **نوع الملف الحقيقي من
     أول بايتات فيه** (مش من اسمو)، وبيعطيه اسم عشوائي (UUID). الأنواع المسموحة: JPG و PNG و WebP و PDF.
@@ -184,7 +184,7 @@ Swagger بيضل على `/docs`.
   - `GET /api/v1/files/private/:name?expires=&signature=`، وبيرفض إذا التوقيع غلط أو انتهى وقتو.
 - `StorageDriver` هي الواجهة، و `LocalStorageDriver` هو السوّاق الوحيد هلق.
 - متغيرات جديدة بـ `.env`: `API_PUBLIC_URL` و `STORAGE_LOCAL_DIR` و `STORAGE_SIGNING_SECRET`.
-- 5 اختبارات e2e بـ `api/test/storage.e2e-spec.ts`.
+- 5 اختبارات e2e بـ `backend/test/storage.e2e-spec.ts`.
 
 **ناقص:** مسارات الرفع نفسها. بتنضاف مع كل وحدة بتحتاجها (أولها طلبات التوثيق)، باستعمال
 `FileInterceptor` من `@nestjs/platform-express` يلي أصلاً موجودة بالبوتكامب.
@@ -204,7 +204,7 @@ Swagger بيضل على `/docs`.
 إرسال إيميل. **اخترناه** من بين الخيارات، لأنو عندو باقة مجانية دائمة (300 رسالة
 باليوم) وما بيطلب بطاقة.
 
-**كيف؟** (`api/src/auth/otp/`)
+**كيف؟** (`backend/src/auth/otp/`)
 - `BrevoOtpSender`: نسخة جديدة من واجهة `OtpSender` يلي كانت موجودة. بتبعت طلب واحد لـ
   `https://api.brevo.com/v3/smtp/email` بـ `fetch` الجاهز بـ Node. **ما في حزمة جديدة ولا SDK.**
 - `otp-email.ts`: نص الإيميل، عربي (من اليمين لليسار) أو إنكليزي حسب لغة المستخدم، بألوان واثق.
@@ -225,14 +225,14 @@ Swagger بيضل على `/docs`.
 1. تفتح حساب على Brevo.
 2. توثّق إيميل أو دومين المرسل (Senders, domains).
 3. تعمل مفتاح API (SMTP & API ← API keys).
-4. تحط المفتاح والمرسل بـ `api/.env`، وتغيّر `EMAIL_PROVIDER=brevo`.
+4. تحط المفتاح والمرسل بـ `backend/.env`، وتغيّر `EMAIL_PROVIDER=brevo`.
 
 ## 14. جلسة الويب: كوكيين وتجديد تلقائي بـ middleware
 
 **ليش؟** بالبوتكامب كان في كوكي واحد فيه JWT بيعيش 8 ساعات. عنا التوكن بيعيش 15 دقيقة بس، لأن
 `docs/CONVENTIONS.md` طالب access + refresh tokens. بدون تجديد تلقائي، المستخدم بيطلع من حسابو كل ربع ساعة.
 
-**كيف؟** (`web/src/lib/session.ts` و `web/src/middleware.ts`)
+**كيف؟** (`frontend/src/lib/session.ts` و `frontend/src/middleware.ts`)
 - كوكيين `httpOnly`، والجافاسكريبت بالمتصفح ما بيقدر يقراهن:
   - `access`: التوكن القصير، وعمر الكوكي نفس عمر التوكن.
   - `refresh`: التوكن الطويل (30 يوم).
@@ -253,7 +253,7 @@ Swagger بيضل على `/docs`.
 **كيف؟**
 - النسخة `4.1.2`: آخر نسخة بتشتغل مع NestJS 10 تبعنا (النسخ الأحدث بدها NestJS 11).
 - `ScheduleModule.forRoot()` بـ `app.module.ts`.
-- `api/src/events/event-documentation.job.ts`: كل ساعة (`@Cron(EVERY_HOUR)`) بينادي
+- `backend/src/events/event-documentation.job.ts`: كل ساعة (`@Cron(EVERY_HOUR)`) بينادي
   `EventDocumentationService.notifyOverdue()`.
 - كل الشغل الحقيقي بالـ service مش بالـ job، فالاختبارات بتنادي الـ service مباشرة بدون ما تستنى ساعة.
 - كل فعالية بتنبلّغ مرة وحدة بس: الـ service بيحط `overdueNotifiedAt` بنفس الـ transaction تبع
@@ -264,12 +264,12 @@ Swagger بيضل على `/docs`.
 
 **ليش؟** الـ api كان طالب `class-validator` نسخة 0.15.1. بس مكتبة Swagger 7 (عن طريق
 `@nestjs/mapped-types`) بتدعم لحد 0.14 بس، فـ npm كان حاطط نسختين بالمشروع، 0.14.4 بالجذر و0.15.1
-جوّا `api/`. NestJS بيقرا المكتبة من الجذر، فالفحص كان عملياً عم يصير بـ 0.14.4 من الأول. لما
+جوّا `backend/`. NestJS بيقرا المكتبة من الجذر، فالفحص كان عملياً عم يصير بـ 0.14.4 من الأول. لما
 ركّبنا `@nestjs/schedule` (§15)، npm شال نسخة الجذر وظنّها زيادة، وصار السيرفر ما يقلع.
 **اخترناها كفريق.**
 
 **كيف؟**
-- `api/package.json`: `"class-validator": "^0.14.4"`. هلق في نسخة وحدة بس بالجذر.
+- `backend/package.json`: `"class-validator": "^0.14.4"`. هلق في نسخة وحدة بس بالجذر.
 - ما تغيّر شي بطريقة الفحص، لأنها نفس النسخة اللي كان السيرفر شغّال عليها.
 - لا ترفعها لـ 0.15 قبل ما نرفع Swagger لنسخة بتدعمها.
 
@@ -278,7 +278,7 @@ Swagger بيضل على `/docs`.
 **ليش؟** اتفقنا إنه الإشعارات توصل عالموبايل كمان، مش بس جوّا التطبيق. تطبيق الموبايل مبني بـ Expo،
 وخدمة Expo Push مجانية وبتوصّل للأندرويد والآيفون من نفس المكان. البوتكامب ما كان فيه إشعارات موبايل.
 
-**كيف؟** (`api/src/push/`)
+**كيف؟** (`backend/src/push/`)
 - **ما في حزمة جديدة ولا SDK:** طلب HTTPS واحد بـ `fetch` الجاهز بـ Node لـ
   `https://exp.host/--/api/v2/push/send` (`expo-push.client.ts`).
 - الموبايل بيسجّل رمز الجهاز بـ `POST /push-devices` بعد الدخول، وبيمسحه بـ `DELETE` عند الخروج.
@@ -287,7 +287,7 @@ Swagger بيضل على `/docs`.
   بالمرة الجاية. والإشعارات الأقدم من يوم ما بتنبعت.
 - إذا Expo قال إنه الجهاز ما عاد موجود، منمسح رمزه.
 - النصوص عربي (`push-text.ts`)، والتفاصيل الكاملة بتضل بصندوق الإشعارات جوّا التطبيق.
-- **مطفّية افتراضياً:** `PUSH_ENABLED=true` بـ `api/.env` لتشتغل. هيك التطوير والاختبارات ما بيبعتوا
+- **مطفّية افتراضياً:** `PUSH_ENABLED=true` بـ `backend/.env` لتشتغل. هيك التطوير والاختبارات ما بيبعتوا
   شي لـ Expo. `EXPO_ACCESS_TOKEN` اختياري، بس إذا فعّلتوا "enhanced security" بمشروع Expo.
 
 ## 18. حفظ الصفحات بالمتصفح 5 دقايق (`staleTimes`)
@@ -297,7 +297,7 @@ Swagger بيضل على `/docs`.
 **اخترناها** بمدة 5 دقايق.
 
 **كيف؟**
-- `web/next.config.ts`: `experimental.staleTimes: { dynamic: 300, static: 300 }`. هو إعداد رسمي من
+- `frontend/next.config.ts`: `experimental.staleTimes: { dynamic: 300, static: 300 }`. هو إعداد رسمي من
   Next نفسه، مش حزمة. كلمة `experimental` يعني ممكن يتغيّر اسمه بنسخة جاية من Next.
 - روابط القائمة الجانبية (`NavLink`) فيها `prefetch`، فالصفحات بتتحمّل بالخلفية قبل ما تكبس.
 - **انتبه:** الصفحة المحفوظة ممكن تكون أقدم بـ 5 دقايق من شغل **غيرك** (منشور جديد لحدا تاني مثلاً).
@@ -310,7 +310,7 @@ Swagger بيضل على `/docs`.
 بدنا طريقة بتشتغل فوراً بدون مراجعة ولا تفعيل. Gmail بيبعت حوالي 500 إيميل باليوم من حساب عادي،
 بس بيحكي SMTP، و Node ما فيه عميل SMTP جاهز، فاحتجنا حزمة. **اخترناها كفريق.**
 
-**كيف؟** (`api/src/auth/otp/gmail-otp-sender.ts`)
+**كيف؟** (`backend/src/auth/otp/gmail-otp-sender.ts`)
 - **`nodemailer` 10.3.1:** أشهر حزمة لإرسال الإيميل بـ Node، وفيها أنواع TypeScript جاهزة (ما في حزمة
   `@types` إضافية).
 - `GmailOtpSender`: نسخة تالتة من واجهة `OtpSender` جنب Console و Brevo، بنفس الإيميل (`otp-email.ts`).
@@ -328,10 +328,10 @@ Swagger بيضل على `/docs`.
 يدوياً يعني كتابة خوارزمية كاملة، والبوتكامب ما فيه شي متل هيك. **اتفقنا عليها كفريق.**
 
 **كيف؟**
-- حزمة `qrcode` 1.5.4 (و `@types/qrcode` 1.5.5 للأنواع) بـ `web/` بس، بنسخ ثابتة.
-- بتنستعمل على السيرفر بس (`web/src/lib/cv-share.ts`، `import "server-only"`): بتحوّل الرابط لصورة
+- حزمة `qrcode` 1.5.4 (و `@types/qrcode` 1.5.5 للأنواع) بـ `frontend/` بس، بنسخ ثابتة.
+- بتنستعمل على السيرفر بس (`frontend/src/lib/cv-share.ts`، `import "server-only"`): بتحوّل الرابط لصورة
   SVG، والصفحة بتعرضها. يعني ما في ولا سطر JavaScript زيادة بينزل للمتصفح.
-- الرابط جوّا الرمز مبني من `PUBLIC_WEB_URL` بـ `web/.env.local`. محلياً حط IP جهازك على الشبكة (متل
+- الرابط جوّا الرمز مبني من `PUBLIC_WEB_URL` بـ `frontend/.env.local`. محلياً حط IP جهازك على الشبكة (متل
   `http://192.168.1.20:3001`)، لأن `localhost` على الموبايل بيعني الموبايل نفسه. وعلى السيرفر الحقيقي
   بيصير عنوان الموقع.
 
@@ -343,11 +343,11 @@ Swagger بيضل على `/docs`.
 واخترنا الـ PDF من السيرفر بدل jsPDF بالمتصفح.
 
 **كيف؟**
-- حزمة `puppeteer` 24.43.1 بـ `api/` بس، بنسخة ثابتة. وقت `npm install` بتنزّل نسخة Chrome خاصة فيها لمجلد
+- حزمة `puppeteer` 24.43.1 بـ `backend/` بس، بنسخة ثابتة. وقت `npm install` بتنزّل نسخة Chrome خاصة فيها لمجلد
   `~/.cache/puppeteer` (شي 170MB).
-- `api/src/cv/cv-pdf.service.ts`: بيشغّل Chrome بلا شاشة مرة وحدة، وبيستعملو لكل الطلبات. لكل ملف بيفتح تاب
+- `backend/src/cv/cv-pdf.service.ts`: بيشغّل Chrome بلا شاشة مرة وحدة، وبيستعملو لكل الطلبات. لكل ملف بيفتح تاب
   جديد وبيسكّرو بعدين. الـ JavaScript مطفي بالصفحة، وما في طلبات مسموحة لبرّا إلا خطوط Google.
-- `api/src/cv/cv-pdf-template.ts`: صفحة HTML بشكل سيرة الموقع (`CvSheet`)، وكل نص كاتبو المستخدم بيتنظّف قبل
+- `backend/src/cv/cv-pdf-template.ts`: صفحة HTML بشكل سيرة الموقع (`CvSheet`)، وكل نص كاتبو المستخدم بيتنظّف قبل
   ما ينحط فيها.
 - الرابط `GET /api/v1/users/me/cv/pdf`. الموقع بيمرّرو من `/cv/pdf` لأن التوكن بالكوكي، والموبايل بيطلبو مباشرة.
 - **عالسيرفر الحقيقي (Linux):** Chrome بدو مكتبات النظام تبعو (Puppeteer بيشرحها بـ "Troubleshooting")، وإذا

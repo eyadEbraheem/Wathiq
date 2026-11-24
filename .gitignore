@@ -21,8 +21,8 @@ coverage/
 *.pem
 
 # Uploaded files in development
-api/storage/
-api/storage-test/
+backend/storage/
+backend/storage-test/
 
 # Showcase seed photos, downloaded once from Unsplash (prisma/showcase/photos.ts)
-api/prisma/.showcase-images/
+backend/prisma/.showcase-images/

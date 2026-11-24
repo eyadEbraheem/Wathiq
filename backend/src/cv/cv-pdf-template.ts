@@ -9,7 +9,7 @@ import type { CvService } from 'src/cv/cv.service';
 
 export type VolunteerCv = Awaited<ReturnType<CvService['build']>>;
 
-/** Same wording as the web's CvSheet (web/src/components/cv/CvSheet.tsx). */
+/** Same wording as the web's CvSheet (frontend/src/components/cv/CvSheet.tsx). */
 const HOURS_NOTE =
   'ساعات التطوع هي مجموع ساعات الفعاليات المكتملة التي شارك فيها المتطوع، وفق ساعات الفعالية التي سجّلها المنظّم.';
 

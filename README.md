@@ -85,7 +85,7 @@
           packages/shared: الأنواع والثوابت المشتركة
 ```
 
-- **`api/` هو المصدر الوحيد لقواعد العمل:** التحقق، الصلاحيات، والوصول للبيانات. الويب والموبايل للواجهة فقط.
+- **`backend/` هو المصدر الوحيد لقواعد العمل:** التحقق، الصلاحيات، والوصول للبيانات. الويب والموبايل للواجهة فقط.
 - المصادقة عبر `Authorization: Bearer`، والمسارات كلها تحت `/api/v1`.
 - شكل خطأ موحّد `{ statusCode, message, error }`، وكل قائمة مقسّمة صفحات `{ data, meta }`.
 - التواريخ بصيغة ISO 8601 UTC، والواجهات تعرضها بتوقيت دمشق.
@@ -94,8 +94,8 @@
 
 | الجزء | التقنيات |
 |---|---|
-| **الخادم** `api/` | NestJS 10، TypeScript 5 (strict)، Prisma 6.7 مع PostgreSQL، JWT، bcrypt، Swagger، `@nestjs/schedule`، `@nestjs/throttler`، Puppeteer لملفات PDF، Jest + Supertest |
-| **الويب** `web/` | Next.js 15 (App Router)، React 19، Tailwind CSS 3.4، Server Actions، خطوط Tajawal وCairo |
+| **الخادم** `backend/` | NestJS 10، TypeScript 5 (strict)، Prisma 6.7 مع PostgreSQL، JWT، bcrypt، Swagger، `@nestjs/schedule`، `@nestjs/throttler`، Puppeteer لملفات PDF، Jest + Supertest |
+| **الويب** `frontend/` | Next.js 15 (App Router)، React 19، Tailwind CSS 3.4، Server Actions، خطوط Tajawal وCairo |
 | **الموبايل** `mobile/` | Expo 54، React Native 0.81، SecureStore، Expo Notifications، Camera، Sharing |
 | **المشترك** `packages/shared` | الأنواع، الـ enums، ألوان التصميم والتسميات العربية |
 
@@ -106,11 +106,11 @@
 
 ```
 wathiq/
-├── api/                    الخادم (NestJS)
+├── backend/                الخادم (NestJS)
 │   ├── prisma/             المخطط، الـ migrations، وبيانات العرض (seed)
 │   ├── src/                وحدة لكل مورد: auth, users, posts, events, cv, stats …
 │   └── test/               اختبارات e2e
-├── web/                    موقع الويب (Next.js)
+├── frontend/               موقع الويب (Next.js)
 │   └── src/
 │       ├── app/            الصفحات (App Router)
 │       ├── components/     المكوّنات، ومنها ui/ للعناصر الأساسية
@@ -130,10 +130,10 @@ git clone https://github.com/eyadEbraheem/wathiq.git
 cd wathiq
 npm install                      # يبني packages/shared ويولّد Prisma Client
 
-cp api/.env.example api/.env     # ثم عدّل DATABASE_URL والأسرار
-cp web/.env.example web/.env.local
+cp backend/.env.example backend/.env     # ثم عدّل DATABASE_URL والأسرار
+cp frontend/.env.example frontend/.env.local
 
-cd api
+cd backend
 npx prisma migrate deploy        # إنشاء الجداول
 npm run db:seed                  # الأقسام، المواضيع، الحساب الرسمي، والمدير
 cd ..
@@ -152,8 +152,8 @@ npm run dev:web                  # http://localhost:3001
 
 | الملف | أهم المتغيرات |
 |---|---|
-| `api/.env` | `DATABASE_URL`، `JWT_ACCESS_SECRET`، `OTP_SECRET`، `FRONTEND_URL`، `API_PUBLIC_URL`، `STORAGE_LOCAL_DIR`، `STORAGE_SIGNING_SECRET`، `EMAIL_PROVIDER`، `ADMIN_EMAIL` / `ADMIN_PASSWORD`، `CV_SIGNING_PRIVATE_KEY`، `PUSH_ENABLED` |
-| `web/.env.local` | `API_URL`، `PUBLIC_WEB_URL` |
+| `backend/.env` | `DATABASE_URL`، `JWT_ACCESS_SECRET`، `OTP_SECRET`، `FRONTEND_URL`، `API_PUBLIC_URL`، `STORAGE_LOCAL_DIR`، `STORAGE_SIGNING_SECRET`، `EMAIL_PROVIDER`، `ADMIN_EMAIL` / `ADMIN_PASSWORD`، `CV_SIGNING_PRIVATE_KEY`، `PUSH_ENABLED` |
+| `frontend/.env.local` | `API_URL`، `PUBLIC_WEB_URL` |
 | `mobile/.env` | `EXPO_PUBLIC_API_URL`، `EXPO_PUBLIC_WEB_URL`، `EXPO_PUBLIC_CV_SIGNING_PUBLIC_KEY`، `EXPO_PUBLIC_EAS_PROJECT_ID` |
 
 رسائل التحقق: `EMAIL_PROVIDER=console` يطبع الرمز في سجل الخادم أثناء التطوير، و `gmail` أو `brevo` للإرسال
@@ -174,14 +174,14 @@ npm run dev:web                  # http://localhost:3001
 
 ## الواجهة البرمجية
 
-- التوثيق التفاعلي (Swagger): `http://localhost:3000/docs`، مع زر Authorize لتجربة المسارات المحمية.
+- التوثيق التفاعلي (Swagger): `http://localhost:3000/api/docs`، مع زر Authorize لتجربة المسارات المحمية.
 - أمثلة: `POST /api/v1/auth/signup`، `GET /api/v1/posts?sectionId=&sort=`، `POST /api/v1/events/:id/applications`،
   `GET /api/v1/users/me/cv/pdf`، `GET /api/v1/highlights/current`، `GET /api/v1/admin/stats`.
 - حدود الطلبات لكل عنوان IP، وأقسى على مسارات المصادقة.
 
 ## الاختبارات
 
-- **الخادم:** اختبارات وحدة واختبارات e2e على قاعدة بيانات منفصلة اسمها ينتهي بـ `_test` (في `api/.env.test`).
+- **الخادم:** اختبارات وحدة واختبارات e2e على قاعدة بيانات منفصلة اسمها ينتهي بـ `_test` (في `backend/.env.test`).
   بعد أي migration جديدة تُطبَّق عليها أيضاً: `DATABASE_URL=<test url> npx prisma migrate deploy`.
 - **الموبايل:** فحص الأنواع، اختبارات عميل الاتصال، وبناء حزمتي Android و iOS بـ `expo export`.
 

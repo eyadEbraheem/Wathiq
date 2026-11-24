@@ -1,5 +1,5 @@
 // Shared constants and types for web and mobile. Never redefine these per app.
-// Enum value lists mirror api/prisma/schema.prisma; keep them in sync when the schema changes.
+// Enum value lists mirror backend/prisma/schema.prisma; keep them in sync when the schema changes.
 
 export * from './api';
 export * from './enums';
