@@ -7,6 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { HealthController } from 'src/health/health.controller';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { PushModule } from 'src/push/push.module';
 import { SectionsModule } from 'src/sections/sections.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { UsersModule } from 'src/users/users.module';
@@ -32,6 +33,7 @@ import { VerificationRequestsModule } from 'src/verification-requests/verificati
     SectionsModule,
     UsersModule,
     VerificationRequestsModule,
+    PushModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
