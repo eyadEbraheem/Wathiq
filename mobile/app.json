@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "واثق",
+    "slug": "wathiq",
+    "scheme": "wathiq",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.wathiq.mobile"
+    },
+    "android": {
+      "package": "org.wathiq.mobile",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "اختر الصور التي تريد إرفاقها في واثق",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "اسمح لواثق باستخدام الكاميرا لمسح رموز التحقق",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
+  }
+}
