@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from 'src/auth/auth.module';
+import { CvModule } from 'src/cv/cv.module';
 import { HighlightsModule } from 'src/highlights/highlights.module';
 import { HealthController } from 'src/health/health.controller';
 import { NotificationsModule } from 'src/notifications/notifications.module';
@@ -41,6 +42,7 @@ import { VerificationRequestsModule } from 'src/verification-requests/verificati
     RatingsModule,
     OrganizersModule,
     SearchModule,
+    CvModule,
     PushModule,
   ],
   controllers: [HealthController],
