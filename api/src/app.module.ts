@@ -10,6 +10,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { SectionsModule } from 'src/sections/sections.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { UsersModule } from 'src/users/users.module';
+import { VerificationRequestsModule } from 'src/verification-requests/verification-requests.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UsersModule } from 'src/users/users.module';
     StorageModule,
     SectionsModule,
     UsersModule,
+    VerificationRequestsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
