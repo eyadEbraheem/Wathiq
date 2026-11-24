@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>منصة مجتمعنا | تطبيق الموبايل التفاعلي — ثيم الفيروزي العميق</title>
+
+  <!-- Google Fonts: Tajawal & Cairo for crisp modern Arabic typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Tajawal', 'Cairo', 'sans-serif'],
+            display: ['Cairo', 'Tajawal', 'sans-serif'],
+          },
+          colors: {
+            canvas: '#F3F8FA',
+            icyTint: '#EBF6F8',
+            softBorder: '#DCECEF',
+            indigoDeep: '#13263A',
+            indigoMid: '#1C3550',
+            indigoDark: '#0D1B2A',
+            slateMuted: '#57707D',
+            deepTeal: '#23A6B5',
+            deepTealLight: '#33C1D1',
+            deepTealDark: '#198996',
+            calmEmerald: '#1FA383',
+            calmEmeraldLight: '#2AC29E',
+            calmEmeraldDark: '#168A6E',
+            softIris: '#7360C6',
+            softIrisLight: '#8A76E0',
+            softIrisDark: '#5E4BB0',
+            sandyGold: '#C99B52',
+            sandyGoldLight: '#D8AE67',
+            sandyGoldDark: '#B5863E',
+            softBerry: '#D45D79',
+            softBerryLight: '#E36F8B',
+            softBerryDark: '#B84863',
+            berryTint: '#FDF1F4',
+          },
+          boxShadow: {
+            cardSoft: '0 8px 24px rgba(19, 38, 58, 0.055)',
+            cardHover: '0 14px 32px rgba(19, 38, 58, 0.1)',
+            tealGlow: '0 10px 22px -6px rgba(35, 166, 181, 0.48)',
+            emeraldGlow: '0 10px 22px -6px rgba(31, 163, 131, 0.42)',
+            irisGlow: '0 10px 22px -6px rgba(115, 96, 198, 0.36)',
+            goldGlow: '0 10px 22px -6px rgba(201, 155, 82, 0.4)',
+            berryGlow: '0 10px 22px -6px rgba(212, 93, 121, 0.38)',
+            phoneBezel: '0 32px 72px -14px rgba(19, 38, 58, 0.34), 0 0 0 1px rgba(255,255,255,0.12) inset',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ============================================================
+       1. DESIGN TOKENS — LIGHT THEME + DEEP TEAL PRIMARY
+    ============================================================ */
+    :root {
+      --canvas: #F3F8FA;
+      --surface: #FFFFFF;
+      --icy-tint: #EBF6F8;
+      --soft-border: #DCECEF;
+      --indigo-deep: #13263A;
+      --indigo-mid: #1C3550;
+      --indigo-dark: #0D1B2A;
+
+      --teal-grad: linear-gradient(135deg, #33C1D1 0%, #198996 100%);
+      --emerald-grad: linear-gradient(135deg, #2AC29E 0%, #168A6E 100%);
+      --iris-grad: linear-gradient(135deg, #8A76E0 0%, #5E4BB0 100%);
+      --gold-grad: linear-gradient(135deg, #D8AE67 0%, #B5863E 100%);
+      --berry-grad: linear-gradient(135deg, #E36F8B 0%, #B84863 100%);
+      --indigo-grad: linear-gradient(150deg, #1C3550 0%, #13263A 55%, #0D1B2A 100%);
+
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', 'Cairo', sans-serif;
+      color: var(--indigo-deep);
+      background-color: var(--canvas);
+      background-image:
+        radial-gradient(circle at 86% 12%, rgba(51, 193, 209, 0.14) 0%, transparent 36%),
+        radial-gradient(circle at 12% 85%, rgba(31, 163, 131, 0.10) 0%, transparent 38%),
+        radial-gradient(circle at 48% 50%, rgba(115, 96, 198, 0.05) 0%, transparent 45%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Gradient utility classes */
+    .bg-teal-grad    { background: var(--teal-grad); }
+    .bg-emerald-grad { background: var(--emerald-grad); }
+    .bg-iris-grad    { background: var(--iris-grad); }
+    .bg-gold-grad    { background: var(--gold-grad); }
+    .bg-berry-grad   { background: var(--berry-grad); }
+    .bg-indigo-grad  { background: var(--indigo-grad); }
+
+    /* ============================================================
+       2. DESKTOP MOBILE BEZEL vs FULL-SCREEN MOBILE VIEWPORT
+    ============================================================ */
+    .desktop-stage {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 20px;
+    }
+
+    .external-panel {
+      width: 315px;
+      max-height: 815px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Realistic iPhone-style Bezel (390px x 815px) */
+    .phone-frame {
+      width: 390px;
+      height: 815px;
+      border-radius: 44px;
+      background: #13263A;
+      padding: 10px;
+      box-shadow: 0 32px 72px -14px rgba(19, 38, 58, 0.34), 0 0 0 2px #26435F inset;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .phone-viewport {
+      width: 100%;
+      height: 100%;
+      border-radius: 36px;
+      background: var(--canvas);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      width: 112px;
+      height: 28px;
+      background: #09131E;
+      border-radius: 999px;
+      position: absolute;
+      top: 9px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      pointer-events: none;
+    }
+    .dynamic-island::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #33C1D1 0%, #13263A 60%, #060D14 100%);
+      opacity: 0.85;
+    }
+
+    /* Realistic Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 10px 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+      z-index: 55;
+      flex-shrink: 0;
+      transition: color 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Inner scroll container inside mobile viewport */
+    .phone-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .phone-scroll::-webkit-scrollbar { width: 4px; }
+    .phone-scroll::-webkit-scrollbar-thumb { background: rgba(19, 38, 58, 0.14); border-radius: 99px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Mobile breakpoint (< 820px): Full screen seamless mobile app */
+    @media (max-width: 819px) {
+      .desktop-stage {
+        padding: 0;
+        gap: 0;
+        display: block;
+      }
+      .external-panel {
+        display: none !important;
+      }
+      .phone-frame {
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        background: transparent;
+      }
+      .phone-viewport {
+        border-radius: 0;
+      }
+      .dynamic-island,
+      .status-bar {
+        display: none !important;
+      }
+      .mobile-quick-fab {
+        display: flex !important;
+      }
+    }
+
+    /* ============================================================
+       3. SIGNATURE ORGANIC CORNER-FLIP BUTTONS + SPRING RIPPLE
+    ============================================================ */
+    .organic-btn {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px 8px 24px 8px;
+      transition:
+        border-radius 0.42s var(--spring),
+        transform 0.32s var(--spring),
+        box-shadow 0.25s ease,
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease;
+      cursor: pointer;
+      user-select: none;
+      isolation: isolate;
+    }
+
+    .organic-btn.organic-sm {
+      border-radius: 18px 6px 18px 6px;
+    }
+
+    .organic-btn:hover {
+      transform: translateY(-1.5px);
+    }
+
+    /* Corner flip toggled smoothly on every tap/click */
+    .organic-btn.flipped {
+      border-radius: 8px 24px 8px 24px !important;
+    }
+    .organic-btn.organic-sm.flipped {
+      border-radius: 6px 18px 6px 18px !important;
+    }
+
+    @keyframes organicBounce {
+      0%   { transform: scale(1); }
+      32%  { transform: scale(0.94); }
+      68%  { transform: scale(1.045); }
+      100% { transform: scale(1); }
+    }
+    .organic-btn.bouncing {
+      animation: organicBounce 0.44s var(--spring) forwards;
+    }
+
+    /* Luminous circular ripple radiating from exact tap/click coordinates */
+    .spring-ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.88) 0%, rgba(51, 193, 209, 0.35) 55%, transparent 100%);
+      pointer-events: none;
+      animation: rippleRadiate 0.6s ease-out forwards;
+      z-index: 30;
+    }
+    .spring-ripple.on-light {
+      background: radial-gradient(circle, rgba(35, 166, 181, 0.36) 0%, rgba(31, 163, 131, 0.16) 60%, transparent 100%);
+    }
+    @keyframes rippleRadiate {
+      to {
+        transform: translate(-50%, -50%) scale(5);
+        opacity: 0;
+      }
+    }
+
+    /* ============================================================
+       4. SPRING POP-UP SCREEN & SHEET TRANSITIONS
+    ============================================================ */
+    .mobile-screen {
+      display: none;
+      opacity: 0;
+    }
+    .mobile-screen.active {
+      display: block;
+      animation: screenSpringPop 0.46s var(--spring) forwards;
+    }
+    @keyframes screenSpringPop {
+      0%   { opacity: 0; transform: scale(0.94) translateY(16px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .sheet-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+    }
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sheet-card {
+      opacity: 0;
+      transform: scale(0.94) translateY(24px);
+      transition: all 0.42s var(--spring);
+    }
+    .sheet-overlay.open .sheet-card {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ============================================================
+       5. GLOWING "م" EMBLEM, SVG TREE FLOW & SCANNER ANIMATIONS
+    ============================================================ */
+    .emblem-glow {
+      position: relative;
+      background: linear-gradient(145deg, #1C3550 0%, #13263A 100%);
+      box-shadow: 0 10px 26px rgba(13, 27, 42, 0.42), 0 0 32px rgba(51, 193, 209, 0.42);
+    }
+    .emblem-glow::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 9999px;
+      padding: 3px;
+      background: linear-gradient(135deg, #33C1D1 0%, #23A6B5 50%, #2AC29E 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .svg-branch {
+      fill: none;
+      stroke-linecap: round;
+      transition: stroke-width 0.34s var(--spring), opacity 0.28s ease, filter 0.34s ease;
+    }
+    .svg-branch.branch-lit {
+      stroke-width: 4.2 !important;
+      opacity: 1 !important;
+      stroke-dasharray: 10 6;
+      animation: branchFlow 1.05s linear infinite;
+      filter: drop-shadow(0 2px 7px rgba(35, 166, 181, 0.35));
+    }
+    @keyframes branchFlow {
+      from { stroke-dashoffset: 32; }
+      to   { stroke-dashoffset: 0; }
+    }
+
+    /* External Panel Active Button */
+    .ext-nav-btn.ext-active {
+      background: var(--teal-grad);
+      color: #FFFFFF;
+      box-shadow: 0 10px 22px -6px rgba(35, 166, 181, 0.46);
+      border-color: transparent;
+    }
+    .ext-nav-btn.ext-active .ext-num {
+      background: rgba(255, 255, 255, 0.24);
+      color: #FFFFFF;
+    }
+
+    /* QR Laser Scanner Beam */
+    @keyframes qrLaserSweep {
+      0%   { top: 10%; }
+      50%  { top: 86%; }
+      100% { top: 10%; }
+    }
+    .qr-laser-beam {
+      animation: qrLaserSweep 1.35s ease-in-out infinite;
+    }
+
+    /* Emerald Verification Pulse */
+    @keyframes emeraldPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(31, 163, 131, 0.44); transform: scale(1); }
+      50%      { box-shadow: 0 0 0 14px rgba(31, 163, 131, 0); transform: scale(1.05); }
+    }
+    .verify-seal-pulse {
+      animation: emeraldPulse 2s infinite;
+    }
+
+    /* Toast animation inside phone */
+    @keyframes toastDrop {
+      0%   { opacity: 0; transform: translateY(-14px) scale(0.94); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .mobile-toast {
+      animation: toastDrop 0.38s var(--spring) forwards;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #cvPrintSheet, #cvPrintSheet * { visibility: visible; }
+      #cvPrintSheet { position: fixed; inset: 0; background: #FFF; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       DESKTOP PRESENTATION STAGE: EXTERNAL PANEL + IPHONE BEZEL
+  ============================================================ -->
+  <div class="desktop-stage">
+
+    <!-- ==========================================================
+         EXTERNAL LIGHT-THEMED QUICK NAVIGATION & LIVE SYNC PANEL (DESKTOP ONLY)
+    ========================================================== -->
+    <aside class="external-panel bg-white rounded-[32px] p-5 border border-softBorder shadow-cardHover">
+      <!-- Brand + Active Theme Pill -->
+      <div class="flex items-center justify-between pb-4 border-b border-softBorder">
+        <div class="flex items-center gap-3">
+          <div class="emblem-glow w-11 h-11 rounded-full flex items-center justify-center text-white font-display font-black text-xl shrink-0">م</div>
+          <div>
+            <h1 class="font-display text-base font-black text-indigoDeep leading-tight">منصة مجتمعنا</h1>
+            <p class="text-[11px] font-extrabold text-deepTeal">تطبيق الموبايل التفاعلي</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-icyTint border border-deepTeal/25 text-[10px] font-black text-deepTealDark" dir="ltr">#23A6B5</span>
+      </div>
+
+      <!-- Live Synchronization Status Strip -->
+      <div class="my-3.5 p-3 rounded-2xl bg-canvas border border-softBorder space-y-2">
+        <div class="flex items-center justify-between text-[10px] font-extrabold text-slateMuted">
+          <span class="flex items-center gap-1.5 text-indigoDeep">
+            <span class="w-2 h-2 rounded-full bg-calmEmerald animate-pulse"></span>
+            <span>حالة المزامنة الحية</span>
+          </span>
+          <span class="text-deepTealDark">ثيم الفيروزي العميق</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-white rounded-xl py-2 px-1 border border-softBorder">
+            <div id="syncPending" class="font-display text-base font-black text-softIris">2</div>
+            <div class="text-[9px] font-bold text-slateMuted">طلبات معلقة</div>
+          </div>
+          <div class="bg-white rounded-xl py-2 px-1 border border-softBorder">
+            <div id="syncBadges" class="font-display text-base font-black text-sandyGoldDark">3</div>
+            <div class="text-[9px] font-bold text-slateMuted">شارات مكتسبة</div>
+          </div>
+          <div class="bg-white rounded-xl py-2 px-1 border border-softBorder">
+            <div id="syncEvents" class="font-display text-base font-black text-deepTealDark">5</div>
+            <div class="text-[9px] font-bold text-slateMuted">أحداث نشطة</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8 One-Click Screen Jump Buttons -->
+      <div class="flex-1 overflow-y-auto no-scrollbar space-y-1.5 pl-0.5">
+        <div class="text-[10px] font-extrabold text-slateMuted px-1 pb-0.5">التنقل السريع بين الشاشات الـ 8</div>
+
+        <button data-ext="scr-welcome" onclick="goScreen('scr-welcome')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">1</span>
+            <span>الترحيب والدخول و OTP</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-wizard" onclick="goScreen('scr-wizard')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">2</span>
+            <span>معالج الاهتمامات (3 خطوات)</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-home" onclick="goScreen('scr-home')" class="organic-btn organic-sm ext-nav-btn ext-active flipped w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">3</span>
+            <span>الرئيسية وشجرة الأقسام</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-event" onclick="goScreen('scr-event')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">4</span>
+            <span>تفاصيل الحدث</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-volunteer-sheet" onclick="openVolunteerSheet(state.activeEventId)" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">5</span>
+            <span>نافذة «أجب لتتطوع»</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-profile" onclick="goScreen('scr-profile')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">6</span>
+            <span>رحلة المستخدم والسيفي</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-charity" onclick="goScreen('scr-charity')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">7</span>
+            <span>لوحة الجمعية والدليل</span>
+          </span>
+        </button>
+
+        <button data-ext="scr-verify" onclick="goScreen('scr-verify')" class="organic-btn organic-sm ext-nav-btn w-full px-3 py-2 text-xs font-extrabold text-indigoDeep bg-canvas border border-softBorder hover:border-deepTeal/50 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="ext-num w-6 h-6 rounded-lg bg-white text-deepTealDark text-[10px] font-black flex items-center justify-center">8</span>
+            <span>التحقق العام QR (بدون حساب)</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Interactive Flow Tip -->
+      <div class="mt-3.5 pt-3 border-t border-softBorder text-[11px] leading-relaxed text-slateMuted">
+        <strong class="text-indigoDeep block mb-0.5">جرّب الدورة الحية الكاملة:</strong>
+        قدّم من شاشة (5) ⟵ اقبل وامنح شارة من (7) ⟵ شاهدها فوراً في السيفي (6) وتحقق منها في (8).
+      </div>
+    </aside>
+
+    <!-- ==========================================================
+         REALISTIC IPHONE-STYLE BEZEL (390px x 815px ON DESKTOP)
+    ========================================================== -->
+    <div class="phone-frame">
+      <div class="phone-viewport" id="phoneViewport">
+
+        <!-- Dynamic Island Notch -->
+        <div class="dynamic-island" aria-hidden="true"></div>
+
+        <!-- Realistic Arabic Status Bar -->
+        <div id="phoneStatusBar" class="status-bar text-indigoDeep bg-transparent">
+          <span class="font-display tracking-tight" dir="ltr">9:41</span>
+          <div class="flex items-center gap-1.5" dir="ltr">
+            <!-- Signal Bars -->
+            <svg class="w-3.5 h-3.5" viewBox="0 0 20 14" fill="currentColor">
+              <rect x="1" y="9" width="3" height="4" rx="1"/>
+              <rect x="6" y="6.5" width="3" height="6.5" rx="1"/>
+              <rect x="11" y="4" width="3" height="9" rx="1"/>
+              <rect x="16" y="1" width="3" height="12" rx="1"/>
+            </svg>
+            <!-- WiFi -->
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="19.5" r="1.2" fill="currentColor"/>
+            </svg>
+            <!-- Battery -->
+            <div class="flex items-center gap-0.5">
+              <div class="w-5 h-2.5 rounded-[3px] border border-current p-[1.5px] flex items-center">
+                <div class="h-full w-[82%] bg-current rounded-[1px]"></div>
+              </div>
+              <div class="w-[2px] h-1.5 bg-current rounded-r"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IN-PHONE TOAST CONTAINER -->
+        <div id="phoneToastStack" class="absolute top-12 inset-x-3.5 z-[85] flex flex-col gap-2 pointer-events-none"></div>
+
+        <!-- COMPACT MOBILE-ONLY QUICK SWITCHER FAB (HIDDEN ON DESKTOP) -->
+        <button onclick="openQuickSwitcherSheet()" title="قائمة الشاشات الـ 8" class="mobile-quick-fab hidden organic-btn organic-sm fixed top-3 left-3 z-[70] px-3 py-1.5 bg-indigoDeep/90 text-white text-[10px] font-black shadow-lg items-center gap-1.5 backdrop-blur-xs">
+          <span>الشاشات (8)</span>
+        </button>
+
+        <!-- ========================================================
+             SCROLLABLE MOBILE SCREENS STAGE
+        ======================================================== -->
+        <div id="phoneScroll" class="phone-scroll">
+
+          <!-- ======================================================
+               SCREEN 1: شاشة الترحيب والدخول و OTP
+          ====================================================== -->
+          <section id="scr-welcome" class="mobile-screen min-h-full bg-indigo-grad text-white px-5 pt-6 pb-8 relative overflow-hidden">
+            <!-- Soft Deep Teal Radial Aura -->
+            <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-deepTeal/28 blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-6 -right-12 w-48 h-48 rounded-full bg-calmEmerald/18 blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col justify-between min-h-[700px] space-y-6">
+              <!-- Logo & Title -->
+              <div class="text-center space-y-2.5 pt-3">
+                <div class="emblem-glow w-20 h-20 rounded-full mx-auto flex items-center justify-center text-white font-display font-black text-4xl">
+                  م
+                </div>
+                <h2 class="font-display text-2xl font-black tracking-tight">أهلاً بك في مجتمعنا</h2>
+                <p class="text-xs text-slate-300 leading-relaxed px-2">
+                  منصة المجتمع المدني للتطوع الموثق، الشارات الرقمية، والسيفي التطوعي بشفافية كاملة
+                </p>
+              </div>
+
+              <!-- Toggle Switcher: Register vs Login -->
+              <div class="bg-white/[0.08] backdrop-blur-md border border-white/15 rounded-[28px] p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-indigoDark/70 border border-white/10">
+                  <button id="mobAuthBtn-reg" onclick="setMobAuthTab('reg')" class="organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-tealGlow">
+                    تسجيل حساب جديد
+                  </button>
+                  <button id="mobAuthBtn-log" onclick="setMobAuthTab('log')" class="organic-btn organic-sm py-2 text-xs font-extrabold text-slate-300">
+                    تسجيل الدخول
+                  </button>
+                </div>
+
+                <!-- Register Form -->
+                <form id="mobAuthForm-reg" onsubmit="openOtpSheet(event)" class="space-y-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">الاسم الكامل</label>
+                    <input id="mobRegName" required type="text" value="سامي العلي" placeholder="أدخل اسمك الكامل"
+                           class="w-full px-4 py-2.5 rounded-2xl bg-white/[0.09] border border-deepTealLight/35 focus:border-deepTealLight text-white placeholder-slate-400 text-xs font-bold outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">الإيميل أو رقم الموبايل</label>
+                    <input id="mobRegContact" required type="text" value="sami.ali@civilhub.org" placeholder="example@mail.com أو 09XXXXXXXX"
+                           class="w-full px-4 py-2.5 rounded-2xl bg-white/[0.09] border border-white/20 focus:border-deepTealLight text-white placeholder-slate-400 text-xs font-bold outline-none transition" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label class="block text-[11px] font-bold text-slate-300 mb-1">كلمة السر</label>
+                      <input required type="password" value="••••••••"
+                             class="w-full px-3.5 py-2.5 rounded-2xl bg-white/[0.09] border border-white/20 focus:border-deepTealLight text-white text-xs font-bold outline-none transition" />
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-bold text-slate-300 mb-1">تاريخ الميلاد</label>
+                      <input required type="date" value="1998-06-15"
+                             class="w-full px-3 py-2.5 rounded-2xl bg-white/[0.09] border border-white/20 focus:border-deepTealLight text-white text-[11px] font-bold outline-none transition" />
+                    </div>
+                  </div>
+                  <button type="submit" class="organic-btn w-full py-3.5 bg-teal-grad text-white text-sm font-black shadow-tealGlow mt-1">
+                    التسجيل وإرسال رمز OTP
+                  </button>
+                </form>
+
+                <!-- Login Form -->
+                <form id="mobAuthForm-log" onsubmit="submitMobLogin(event)" class="hidden space-y-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">الإيميل أو رقم الموبايل</label>
+                    <input required type="text" value="sami.ali@civilhub.org"
+                           class="w-full px-4 py-3 rounded-2xl bg-white/[0.09] border border-deepTealLight/35 focus:border-deepTealLight text-white text-xs font-bold outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">كلمة السر</label>
+                    <input required type="password" value="••••••••"
+                           class="w-full px-4 py-3 rounded-2xl bg-white/[0.09] border border-white/20 focus:border-deepTealLight text-white text-xs font-bold outline-none" />
+                  </div>
+                  <button type="submit" class="organic-btn w-full py-3.5 bg-teal-grad text-white text-sm font-black shadow-tealGlow">
+                    تسجيل الدخول للرئيسية
+                  </button>
+                </form>
+
+                <!-- Outlined Teal Glass Button -->
+                <button onclick="goScreen('scr-verify')" class="organic-btn w-full py-2.5 bg-white/[0.04] border border-deepTealLight/55 hover:border-white text-deepTealLight hover:text-white text-xs font-extrabold">
+                  التحقق العام من شارة (QR بدون حساب)
+                </button>
+              </div>
+
+              <!-- Footer Note -->
+              <div class="text-center space-y-2 pb-2">
+                <p class="text-[10px] text-slate-300">الحساب الافتراضي: مستخدم عادي • يُطلب التوثيق لاحقاً من الإعدادات</p>
+                <button onclick="goScreen('scr-home')" class="organic-btn organic-sm px-4 py-1.5 bg-white/10 text-white text-[11px] font-bold">
+                  استعراض الرئيسية مباشرة ←
+                </button>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 2: معالج الاهتمامات (3-STEP INTERESTS WIZARD)
+          ====================================================== -->
+          <section id="scr-wizard" class="mobile-screen min-h-full px-4 pt-3 pb-8 space-y-4">
+            <!-- Top Wizard Bar -->
+            <div class="flex items-center justify-between">
+              <button onclick="goScreen('scr-welcome')" class="organic-btn organic-sm w-9 h-9 bg-white border border-softBorder text-indigoDeep flex items-center justify-center shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+              <div class="text-center">
+                <h2 class="font-display text-base font-black text-indigoDeep">معالج الاهتمامات</h2>
+                <p id="wizStepSubtitle" class="text-[10px] font-extrabold text-deepTealDark">الخطوة 1 من 3 • الاهتمامات (إجبارية)</p>
+              </div>
+              <span class="w-9"></span>
+            </div>
+
+            <!-- Step Dots -->
+            <div class="flex items-center justify-center gap-2">
+              <span id="wizDot1" class="h-2 w-8 rounded-full bg-teal-grad transition-all duration-300"></span>
+              <span id="wizDot2" class="h-2 w-2.5 rounded-full bg-softBorder transition-all duration-300"></span>
+              <span id="wizDot3" class="h-2 w-2.5 rounded-full bg-softBorder transition-all duration-300"></span>
+            </div>
+
+            <!-- STEP 1: Curved SVG Tree Selection (Mandatory) -->
+            <div id="mobWizPane1" class="bg-white rounded-[28px] p-4 shadow-cardSoft border border-softBorder space-y-3">
+              <div class="text-center">
+                <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-indigo-grad text-white text-xs font-black shadow-sm">
+                  <span class="w-2 h-2 rounded-full bg-deepTealLight animate-pulse"></span>
+                  <span>المجالات — اختر اهتمامك الأول</span>
+                </span>
+              </div>
+
+              <!-- Curved Animated SVG Tree Root-to-Nodes -->
+              <div class="px-2 -my-1">
+                <svg viewBox="0 0 320 64" class="w-full h-[56px] overflow-visible">
+                  <!-- Right Branch (RTL 1): Humanitarian (Soft Berry) -->
+                  <path id="wizTreeSvg-humanitarian" class="svg-branch" d="M 160 2 C 160 34, 270 22, 270 62" stroke="#D45D79" stroke-width="2.6" opacity="0.4" />
+                  <!-- Center Branch (RTL 2): Environment (Calm Emerald) -->
+                  <path id="wizTreeSvg-environment" class="svg-branch branch-lit" d="M 160 2 L 160 62" stroke="#1FA383" stroke-width="3.6" opacity="1" />
+                  <!-- Left Branch (RTL 3): Animals (Soft Iris) -->
+                  <path id="wizTreeSvg-animals" class="svg-branch" d="M 160 2 C 160 34, 50 22, 50 62" stroke="#7360C6" stroke-width="2.6" opacity="0.4" />
+                  <circle cx="160" cy="4" r="5" fill="#23A6B5" />
+                </svg>
+              </div>
+
+              <!-- 3 Color-Coded Organic Category Nodes -->
+              <div class="space-y-2.5">
+                <!-- Environment (Calm Emerald) -->
+                <button type="button" id="wizNode-environment" onclick="toggleMobWizInterest('environment')" class="organic-btn flipped w-full p-3.5 bg-[#ECF9F5] border-2 border-calmEmerald text-right flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-emerald-grad text-white text-lg flex items-center justify-center shrink-0 shadow-sm">🌿</span>
+                    <div>
+                      <div class="text-xs font-black text-indigoDeep">جانب بيئي</div>
+                      <div class="text-[10px] font-bold text-calmEmeraldDark">تشجير، إعادة تدوير، حدائق</div>
+                    </div>
+                  </div>
+                  <span id="wizTick-environment" class="w-6 h-6 rounded-full bg-emerald-grad text-white text-xs font-black flex items-center justify-center shrink-0">✓</span>
+                </button>
+
+                <!-- Humanitarian (Soft Berry) -->
+                <button type="button" id="wizNode-humanitarian" onclick="toggleMobWizInterest('humanitarian')" class="organic-btn w-full p-3.5 bg-canvas border-2 border-softBorder text-right flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-berry-grad text-white text-lg flex items-center justify-center shrink-0 shadow-sm">♥</span>
+                    <div>
+                      <div class="text-xs font-black text-indigoDeep">عمل إنساني مجتمعي</div>
+                      <div class="text-[10px] font-bold text-softBerryDark">دفء شتوي، سلال، تعليم</div>
+                    </div>
+                  </div>
+                  <span id="wizTick-humanitarian" class="w-6 h-6 rounded-full bg-softBorder text-slateMuted text-xs font-black flex items-center justify-center shrink-0">+</span>
+                </button>
+
+                <!-- Animals (Soft Iris) -->
+                <button type="button" id="wizNode-animals" onclick="toggleMobWizInterest('animals')" class="organic-btn w-full p-3.5 bg-canvas border-2 border-softBorder text-right flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-iris-grad text-white text-lg flex items-center justify-center shrink-0 shadow-sm">🐾</span>
+                    <div>
+                      <div class="text-xs font-black text-indigoDeep">رعاية الحيوانات</div>
+                      <div class="text-[10px] font-bold text-softIrisDark">عيادات بيطرية، إنقاذ، تبنّي</div>
+                    </div>
+                  </div>
+                  <span id="wizTick-animals" class="w-6 h-6 rounded-full bg-softBorder text-slateMuted text-xs font-black flex items-center justify-center shrink-0">+</span>
+                </button>
+              </div>
+
+              <p class="text-[10px] text-slateMuted text-center pt-1">
+                يُفتح قسمك المختار الأول تلقائياً في الرئيسية، وإن لم يُختر يُفتح «عمل إنساني مجتمعي»
+              </p>
+            </div>
+
+            <!-- STEP 2: Personal Info (Skippable) -->
+            <div id="mobWizPane2" class="hidden bg-white rounded-[28px] p-5 shadow-cardSoft border border-softBorder space-y-3.5">
+              <div class="p-3 rounded-2xl bg-icyTint border border-deepTeal/25 text-[11px] font-bold text-deepTealDark">
+                هذه الخطوة اختيارية — يمكنك تخطّيها أو إضافتها لإثراء السيفي التطوعي.
+              </div>
+              <div>
+                <label class="block text-xs font-extrabold text-indigoDeep mb-1">المدينة / المنطقة</label>
+                <input id="mobWizCity" type="text" value="سلمية — حماة" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal text-xs font-bold outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-extrabold text-indigoDeep mb-1">نبذة تطوعية قصيرة</label>
+                <textarea id="mobWizBio" rows="3" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal text-xs outline-none">متطوع مجتمعي شغوف بمبادرات التشجير والعمل الإنساني المنظم.</textarea>
+              </div>
+            </div>
+
+            <!-- STEP 3: Volunteer Teams (Skippable) -->
+            <div id="mobWizPane3" class="hidden bg-white rounded-[28px] p-4 shadow-cardSoft border border-softBorder space-y-3">
+              <div class="text-xs font-black text-indigoDeep">فرق تطوعية مقترحة للانضمام (اختياري)</div>
+              <div class="space-y-2.5">
+                <div class="p-3 rounded-2xl bg-canvas border border-softBorder flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-black text-indigoDeep">فريق بصمة خضراء ✓</div>
+                    <div class="text-[10px] font-bold text-calmEmeraldDark">جانب بيئي • 340 متطوع</div>
+                  </div>
+                  <button onclick="toggleMobTeamJoin(this)" class="organic-btn organic-sm px-3.5 py-1.5 bg-teal-grad text-white text-[11px] font-black">انضمام</button>
+                </div>
+                <div class="p-3 rounded-2xl bg-canvas border border-softBorder flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-black text-indigoDeep">سواعد العطاء الإنساني ✓</div>
+                    <div class="text-[10px] font-bold text-softBerryDark">إنساني • 520 متطوع</div>
+                  </div>
+                  <button onclick="toggleMobTeamJoin(this)" class="organic-btn organic-sm px-3.5 py-1.5 bg-teal-grad text-white text-[11px] font-black">انضمام</button>
+                </div>
+                <div class="p-3 rounded-2xl bg-canvas border border-softBorder flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-black text-indigoDeep">مبادرة رفق للحيوانات ✓</div>
+                    <div class="text-[10px] font-bold text-softIrisDark">حيوانات • 185 متطوع</div>
+                  </div>
+                  <button onclick="toggleMobTeamJoin(this)" class="organic-btn organic-sm px-3.5 py-1.5 bg-teal-grad text-white text-[11px] font-black">انضمام</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wizard Bottom Actions -->
+            <div class="grid grid-cols-5 gap-2.5 pt-2">
+              <button onclick="mobWizardSkip()" class="organic-btn col-span-2 py-3 bg-white border-2 border-deepTeal text-deepTealDark text-xs font-black">
+                تخطي
+              </button>
+              <button onclick="mobWizardNext()" id="mobWizNextBtn" class="organic-btn col-span-3 py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow flex items-center justify-center gap-1.5">
+                <span>التالي</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 3: الصفحة الرئيسية والأنشطة (HOME — AIRBNB + SOCIAL)
+          ====================================================== -->
+          <section id="scr-home" class="mobile-screen active pb-24">
+            <!-- Top Mobile Header -->
+            <div class="sticky top-0 z-30 bg-white/92 backdrop-blur-md border-b border-softBorder px-4 py-3">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="emblem-glow w-8 h-8 rounded-full flex items-center justify-center text-white font-display font-black text-base">م</div>
+                  <div>
+                    <h2 class="font-display text-base font-black text-indigoDeep leading-none">الرئيسية</h2>
+                    <span class="text-[10px] font-bold text-deepTealDark">منصة مجتمعنا</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button onclick="toggleHomeSearch()" class="organic-btn organic-sm w-9 h-9 bg-canvas border border-softBorder text-indigoDeep flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </button>
+                  <button onclick="openNotificationsSheet()" class="organic-btn organic-sm w-9 h-9 bg-canvas border border-softBorder text-indigoDeep flex items-center justify-center relative">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span id="homeNotifBadge" class="w-4 h-4 rounded-full bg-deepTeal text-white text-[9px] font-black flex items-center justify-center border-2 border-white absolute -top-1 -right-1">3</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Expandable Search Bar -->
+              <div id="homeSearchWrap" class="hidden mt-2.5">
+                <input id="homeSearchInput" oninput="setHomeSearch(this.value)" type="text" placeholder="ابحث عن مبادرة، جمعية، حي..."
+                       class="w-full px-3.5 py-2 rounded-2xl bg-canvas border border-deepTeal/40 focus:border-deepTeal text-xs font-bold text-indigoDeep outline-none" />
+              </div>
+            </div>
+
+            <div class="px-3.5 pt-3.5 space-y-4">
+              <!-- HORIZONTAL SVG BRANCHING CATEGORY TREE -->
+              <div class="bg-white rounded-[26px] p-3.5 shadow-cardSoft border border-softBorder">
+                <div class="flex flex-col items-center">
+                  <!-- Top Root Badge -->
+                  <button onclick="selectMobCategory('all')" class="organic-btn organic-sm flipped px-4 py-1 bg-teal-grad text-white text-[11px] font-black shadow-tealGlow flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    <span>الأقسام الرئيسية</span>
+                  </button>
+
+                  <!-- Curved Colored SVG Branching Lines -->
+                  <div class="w-full px-3 -my-0.5">
+                    <svg viewBox="0 0 340 48" class="w-full h-[42px] overflow-visible">
+                      <!-- RTL Branch 1 (Rightmost): الكل (Deep Teal) -->
+                      <path id="mobTree-all" class="svg-branch branch-lit" d="M 170 2 C 170 24, 298 14, 298 46" stroke="#23A6B5" stroke-width="3.2" opacity="1" />
+                      <!-- RTL Branch 2: عمل إنساني (Soft Berry) -->
+                      <path id="mobTree-humanitarian" class="svg-branch" d="M 170 2 C 170 26, 212 18, 212 46" stroke="#D45D79" stroke-width="2.4" opacity="0.45" />
+                      <!-- RTL Branch 3: جانب بيئي (Calm Emerald) -->
+                      <path id="mobTree-environment" class="svg-branch" d="M 170 2 C 170 26, 128 18, 128 46" stroke="#1FA383" stroke-width="2.4" opacity="0.45" />
+                      <!-- RTL Branch 4 (Leftmost): حيوانات (Soft Iris) -->
+                      <path id="mobTree-animals" class="svg-branch" d="M 170 2 C 170 24, 42 14, 42 46" stroke="#7360C6" stroke-width="2.4" opacity="0.45" />
+                      <circle cx="170" cy="3" r="4" fill="#23A6B5" />
+                    </svg>
+                  </div>
+
+                  <!-- 4 Horizontal Leaf Buttons -->
+                  <div class="w-full grid grid-cols-4 gap-1.5 text-center">
+                    <button data-mcat="all" onclick="selectMobCategory('all')" class="mob-tree-leaf organic-btn organic-sm flipped py-2 px-1 bg-teal-grad text-white shadow-tealGlow flex flex-col items-center gap-1">
+                      <span class="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center text-sm">✦</span>
+                      <span class="text-[10px] font-black leading-tight">الكل</span>
+                    </button>
+
+                    <button data-mcat="humanitarian" onclick="selectMobCategory('humanitarian')" class="mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-berryTint border border-softBerry/30 text-indigoDeep flex flex-col items-center gap-1">
+                      <span class="w-7 h-7 rounded-xl bg-berry-grad text-white flex items-center justify-center text-sm">♥</span>
+                      <span class="text-[10px] font-black leading-tight">عمل إنساني</span>
+                    </button>
+
+                    <button data-mcat="environment" onclick="selectMobCategory('environment')" class="mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-[#ECF9F5] border border-calmEmerald/30 text-indigoDeep flex flex-col items-center gap-1">
+                      <span class="w-7 h-7 rounded-xl bg-emerald-grad text-white flex items-center justify-center text-sm">🌿</span>
+                      <span class="text-[10px] font-black leading-tight">جانب بيئي</span>
+                    </button>
+
+                    <button data-mcat="animals" onclick="selectMobCategory('animals')" class="mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-[#F3F1FC] border border-softIris/30 text-indigoDeep flex flex-col items-center gap-1">
+                      <span class="w-7 h-7 rounded-xl bg-iris-grad text-white flex items-center justify-center text-sm">🐾</span>
+                      <span class="text-[10px] font-black leading-tight">حيوانات</span>
+                    </button>
+                  </div>
+
+                  <!-- Horizontal Scrollable Sub-topic Pills -->
+                  <div id="mobSubtopicsBar" class="w-full flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-3 mt-3 border-t border-softBorder"></div>
+                </div>
+              </div>
+
+              <!-- Sort Toggle Row -->
+              <div class="flex items-center justify-between gap-2 px-0.5">
+                <h3 id="mobFeedTitle" class="font-display text-sm font-black text-indigoDeep">المبادرات المجتمعية</h3>
+                <div class="flex items-center gap-1 bg-white p-1 rounded-2xl border border-softBorder">
+                  <button id="mobSortLatest" onclick="setMobSort('latest')" class="organic-btn organic-sm flipped px-3 py-1 text-[10px] font-black bg-teal-grad text-white">الأحدث</button>
+                  <button id="mobSortTop" onclick="setMobSort('top')" class="organic-btn organic-sm px-3 py-1 text-[10px] font-extrabold text-slateMuted">الأكثر رفعاً ↑</button>
+                </div>
+              </div>
+
+              <!-- Rich Initiative Cards Stack -->
+              <div id="mobFeedList" class="space-y-4"></div>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 4: تفاصيل الحدث (EVENT DETAILS)
+          ====================================================== -->
+          <section id="scr-event" class="mobile-screen pb-24">
+            <!-- Visual Illustrated Header -->
+            <div class="relative h-56 w-full overflow-hidden">
+              <div id="detArtworkBox" class="w-full h-full"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-indigoDeep/85 via-indigoDeep/20 to-indigoDeep/35"></div>
+
+              <!-- Back & Share Controls -->
+              <div class="absolute top-3 inset-x-3.5 flex items-center justify-between">
+                <button onclick="goScreen('scr-home')" class="organic-btn organic-sm w-9 h-9 bg-white/92 text-indigoDeep flex items-center justify-center shadow">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+                <button onclick="shareActiveEvent()" class="organic-btn organic-sm px-3 py-1.5 bg-white/92 text-indigoDeep text-[11px] font-black shadow flex items-center gap-1">
+                  <span>مشاركة</span>
+                </button>
+              </div>
+
+              <!-- Category & Title Overlay -->
+              <div class="absolute bottom-4 inset-x-4 text-white space-y-1.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span id="detCatPill" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-grad text-white">جانب بيئي</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white/20 backdrop-blur-xs border border-white/25">موقع ميداني + شام كاش QR</span>
+                </div>
+                <h2 id="detTitle" class="font-display text-xl font-black leading-snug">مبادرة تشجير الحي</h2>
+              </div>
+            </div>
+
+            <!-- Event Content Body -->
+            <div class="px-4 pt-4 space-y-4">
+              <!-- Sponsor Charity Card -->
+              <div class="p-3.5 rounded-[22px] bg-white border border-softBorder shadow-cardSoft flex items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div id="detOrgAvatar" class="w-10 h-10 rounded-2xl bg-emerald-grad text-white font-display font-black text-lg flex items-center justify-center shrink-0">س</div>
+                  <div class="min-w-0">
+                    <div id="detOrgName" class="text-xs font-black text-indigoDeep truncate">جمعية سلمية للبيئة ✓</div>
+                    <div class="text-[10px] font-bold text-calmEmeraldDark">جمعية موثقة تمنح شارة رقمية</div>
+                  </div>
+                </div>
+                <button onclick="openShamCashSheet(state.activeEventId)" class="organic-btn organic-sm px-3 py-1.5 bg-icyTint border border-deepTeal/30 text-deepTealDark text-[10px] font-black shrink-0">
+                  شام كاش QR
+                </button>
+              </div>
+
+              <!-- Meta Info Grid -->
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-2xl bg-white border border-softBorder">
+                  <div class="text-[10px] font-bold text-slateMuted">التاريخ والوقت</div>
+                  <div id="detDate" class="text-[11px] font-black text-indigoDeep mt-0.5">الجمعة 20 نوفمبر • 09:00 ص</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-white border border-softBorder">
+                  <div class="text-[10px] font-bold text-slateMuted">الموقع الميداني</div>
+                  <div id="detLoc" class="text-[11px] font-black text-indigoDeep mt-0.5">الحديقة الشمالية</div>
+                </div>
+              </div>
+
+              <!-- Volunteer Slots Progress -->
+              <div class="p-3.5 rounded-2xl bg-icyTint/85 border border-deepTeal/25 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-extrabold text-deepTealDark">المقاعد المتبقية للتطوع</span>
+                  <span id="detSlots" class="font-black text-indigoDeep">18 / 25 متطوع</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-white overflow-hidden">
+                  <div id="detSlotsBar" class="h-full bg-teal-grad rounded-full transition-all duration-500" style="width:72%"></div>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="bg-white rounded-[24px] p-4 border border-softBorder space-y-2">
+                <h3 class="font-display text-sm font-black text-indigoDeep">عن المبادرة وشروط الشارة</h3>
+                <p id="detDesc" class="text-xs text-slateMuted leading-relaxed"></p>
+                <div class="p-2.5 rounded-xl bg-canvas text-[10px] font-bold text-indigoDeep leading-relaxed">
+                  🔒 المنصة لا تستلم أي مبلغ مالي — التبرع يتم فقط عبر رابط أو QR خارجي للجمعية أو بالتطوع الميداني.
+                </div>
+              </div>
+
+              <!-- Full-Width Deep Teal Organic Primary CTA -->
+              <button onclick="openVolunteerSheet(state.activeEventId)" class="organic-btn w-full py-4 bg-teal-grad text-white text-sm font-black shadow-tealGlow flex items-center justify-center gap-2">
+                <span>تطوع الآن</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </button>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 6: رحلة المستخدم والسيفي التطوعي (PROFILE & CV)
+          ====================================================== -->
+          <section id="scr-profile" class="mobile-screen pb-24">
+            <!-- Curved Deep Teal to Calm Emerald Top Header -->
+            <div class="bg-gradient-to-bl from-deepTealDark via-deepTeal to-calmEmerald text-white px-4 pt-4 pb-14 rounded-b-[34px] relative overflow-hidden">
+              <div class="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-white/10 blur-2xl"></div>
+              <div class="relative z-10 flex items-center justify-between mb-4">
+                <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-black backdrop-blur-xs">حساب مستخدم عادي</span>
+                <button onclick="openAccountVerifySheet()" class="organic-btn organic-sm px-3 py-1 bg-indigoDeep/85 text-white text-[10px] font-black">
+                  طلب توثيق الحساب
+                </button>
+              </div>
+              <div class="relative z-10 flex items-center gap-3.5">
+                <div class="w-16 h-16 rounded-[22px] bg-indigo-grad border-[3px] border-white/85 shadow-lg flex items-center justify-center font-display font-black text-2xl">
+                  سع
+                </div>
+                <div>
+                  <h2 id="profName" class="font-display text-lg font-black leading-tight">سامي العلي</h2>
+                  <p class="text-[11px] text-white/90 font-bold mt-0.5">متطوع مجتمعي • سلمية، حماة</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-3.5 -mt-9 relative z-10 space-y-4">
+              <!-- 3 Stat Cards -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="bg-white rounded-2xl p-3 text-center shadow-cardSoft border border-softBorder">
+                  <div id="profStatBadges" class="font-display text-xl font-black text-sandyGoldDark">3</div>
+                  <div class="text-[10px] font-bold text-slateMuted">الشارات</div>
+                </div>
+                <div class="bg-white rounded-2xl p-3 text-center shadow-cardSoft border border-softBorder">
+                  <div id="profStatHours" class="font-display text-xl font-black text-deepTealDark">54</div>
+                  <div class="text-[10px] font-bold text-slateMuted">ساعات التطوع</div>
+                </div>
+                <div class="bg-white rounded-2xl p-3 text-center shadow-cardSoft border border-softBorder">
+                  <div id="profStatDone" class="font-display text-xl font-black text-calmEmeraldDark">7</div>
+                  <div class="text-[10px] font-bold text-slateMuted">أحداث مكتملة</div>
+                </div>
+              </div>
+
+              <!-- Quick QR Verification & Volunteer CV Export Card -->
+              <div class="bg-white rounded-[26px] p-4 shadow-cardSoft border border-softBorder space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="p-2 rounded-2xl bg-canvas border border-softBorder shrink-0">
+                    <svg class="w-14 h-14 text-indigoDeep" viewBox="0 0 29 29" fill="currentColor">
+                      <path d="M1 1h7v7H1V1zm1 1v5h5V2H2zm1 1h3v3H3V3zm18-2h7v7h-7V1zm1 1v5h5V2h-5zm1 1h3v3h-3V3zM1 21h7v7H1v-7zm1 1v5h5v-5H2zm1 1h3v3H3v-3z"/>
+                      <rect x="10" y="2" width="3" height="3"/><rect x="15" y="4" width="3" height="2"/><rect x="10" y="9" width="5" height="4"/>
+                      <rect x="2" y="11" width="5" height="2"/><rect x="18" y="11" width="4" height="3"/><rect x="12" y="16" width="5" height="3"/>
+                      <rect x="21" y="17" width="6" height="3"/><rect x="10" y="22" width="4" height="4"/><rect x="18" y="23" width="5" height="4"/>
+                    </svg>
+                  </div>
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-black text-indigoDeep">رمز QR للسيفي التطوعي</div>
+                    <p class="text-[10px] text-slateMuted leading-relaxed">يضم شاراتك وأحداثك والأكواد الفريدة للتحقق العام دون حساب.</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="openCvPreviewSheet()" class="organic-btn organic-sm py-2.5 bg-teal-grad text-white text-[11px] font-black shadow-tealGlow">
+                    تصدير السيفي التطوعي
+                  </button>
+                  <button onclick="openEmergencyRevokeSheet()" class="organic-btn organic-sm py-2.5 bg-berryTint border border-softBerry/30 text-softBerryDark text-[11px] font-black">
+                    إلغاء شارة طارئ
+                  </button>
+                </div>
+              </div>
+
+              <!-- Earned Badges List (Live synced with Screen 7) -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between px-1">
+                  <h3 class="font-display text-sm font-black text-indigoDeep">الشارات المكتسبة</h3>
+                  <span class="text-[10px] font-bold text-deepTealDark">شعار الجمعية + القسم + كود فريد</span>
+                </div>
+                <div id="mobProfileBadges" class="space-y-2.5"></div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 7: لوحة الجمعية الخيرية والدليل والمراجعة
+          ====================================================== -->
+          <section id="scr-charity" class="mobile-screen pb-24">
+            <!-- Top Header + Segmented Tabs -->
+            <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-softBorder px-4 pt-3 pb-3 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h2 class="font-display text-base font-black text-indigoDeep">الجمعية والدليل والمراجعة</h2>
+                <span class="px-2.5 py-0.5 rounded-full bg-calmEmerald/15 text-calmEmeraldDark text-[10px] font-black">حساب موثق ✓</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-canvas border border-softBorder">
+                <button id="chTab-dash" onclick="switchCharityTab('dash')" class="organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-sm">
+                  لوحة الجمعية
+                </button>
+                <button id="chTab-dir" onclick="switchCharityTab('dir')" class="organic-btn organic-sm py-2 text-xs font-extrabold text-slateMuted">
+                  الدليل والمراجعة (<span id="mobQueueCount">2</span>)
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 1: CHARITY DASHBOARD -->
+            <div id="chPane-dash" class="px-3.5 pt-3.5 space-y-4">
+              <!-- Deep Indigo Header Card with "إنشاء حدث جديد" CTA -->
+              <div class="bg-indigo-grad rounded-[26px] p-4 text-white space-y-3 relative overflow-hidden">
+                <div class="absolute -left-8 -top-8 w-28 h-28 rounded-full bg-deepTeal/25 blur-2xl"></div>
+                <div class="relative z-10 flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-2xl bg-emerald-grad text-white font-display font-black text-lg flex items-center justify-center shrink-0">س</div>
+                  <div>
+                    <div class="text-sm font-black">جمعية سلمية للبيئة ✓</div>
+                    <div class="text-[10px] text-deepTealLight font-bold">إدارة الأحداث، المتقدمين، ومنح الشارات</div>
+                  </div>
+                </div>
+                <button onclick="openCreateEventSheet()" class="organic-btn relative z-10 w-full py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow flex items-center justify-center gap-1.5">
+                  <span class="text-base leading-none">+</span>
+                  <span>إنشاء حدث جديد (يُنشر في الرئيسية)</span>
+                </button>
+              </div>
+
+              <!-- Live Applicants Management Queue -->
+              <div class="bg-white rounded-[26px] p-4 shadow-cardSoft border border-softBorder space-y-3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-display text-sm font-black text-indigoDeep">إدارة المتقدمين والشارات</h3>
+                    <p class="text-[10px] text-slateMuted">اقبل المتطوع ثم اضغط «منح شارة» لتوليد كود فريد</p>
+                  </div>
+                  <span id="chPendingPill" class="px-2.5 py-0.5 rounded-full bg-softIris/15 text-softIrisDark text-[10px] font-black">2 معلق</span>
+                </div>
+                <div id="chApplicantsList" class="space-y-2.5"></div>
+              </div>
+
+              <!-- Internal vs External Documentation Cards -->
+              <div class="space-y-2.5">
+                <h3 class="font-display text-sm font-black text-indigoDeep px-1">التوثيق بعد انتهاء الحدث</h3>
+
+                <!-- Internal Private Doc -->
+                <div class="bg-white rounded-[24px] p-4 border-2 border-indigoDeep/15 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-indigoDeep">🔒 توثيق داخلي خاص بالجمعية</span>
+                    <span class="px-2 py-0.5 rounded-full bg-indigoDeep text-white text-[9px] font-black">اختياري • سري</span>
+                  </div>
+                  <p class="text-[10px] text-slateMuted leading-relaxed">
+                    تقارير ميدانية ومالية وصور خاصة بأرشيف الجمعية فقط، لا يراها غيرها نهائياً.
+                  </p>
+                  <button onclick="showMobileToast('تم حفظ التقرير الداخلي السري للجمعية 🔒', 'indigo')" class="organic-btn organic-sm w-full py-2 bg-indigo-grad text-white text-[11px] font-black">
+                    حفظ التقرير الداخلي
+                  </button>
+                </div>
+
+                <!-- External Public Doc -->
+                <div class="bg-white rounded-[24px] p-4 border-2 border-deepTeal/30 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-indigoDeep">🌍 توثيق خارجي عام للنتائج والصور</span>
+                    <span id="extDocState" class="px-2 py-0.5 rounded-full bg-calmEmerald/15 text-calmEmeraldDark text-[9px] font-black">مكتمل ✓</span>
+                  </div>
+                  <p class="text-[10px] text-slateMuted leading-relaxed">
+                    ملخص الحدث والنتائج والصور التي تحدد الجمعية نشرها للعامة لتفعيل منح الشارات.
+                  </p>
+                  <button onclick="document.getElementById('extDocState').textContent='تم التحديث ✓'; showMobileToast('تم نشر التوثيق الخارجي العام للحدث ✓', 'teal')" class="organic-btn organic-sm w-full py-2 bg-teal-grad text-white text-[11px] font-black shadow-sm">
+                    تحديث ونشر التوثيق الخارجي
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: DIRECTORY & TRUSTED PERSON REVIEW QUEUE -->
+            <div id="chPane-dir" class="hidden px-3.5 pt-3.5 space-y-4">
+              <!-- Verified Directory & MoUs -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between px-1">
+                  <h3 class="font-display text-sm font-black text-indigoDeep">دليل الجهات ومذكرات التفاهم</h3>
+                  <span class="text-[10px] font-bold text-deepTealDark">جمعيات + أشخاص موثوقون</span>
+                </div>
+                <div id="mobDirectoryList" class="space-y-2.5"></div>
+              </div>
+
+              <!-- Trusted Person Review Queue -->
+              <div class="bg-white rounded-[26px] p-4 shadow-cardSoft border border-softBorder space-y-3">
+                <div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-softIris/15 text-softIrisDark text-[10px] font-black">صلاحية الشخص الموثوق</span>
+                  <h3 class="font-display text-sm font-black text-indigoDeep mt-1">طابور مراجعة منشورات المستخدمين</h3>
+                  <p class="text-[10px] text-slateMuted">الموافقة تنشر المبادرة فوراً في الرئيسية (الشاشة 3)</p>
+                </div>
+                <div id="mobTrustedQueueList" class="space-y-2.5"></div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ======================================================
+               SCREEN 8: التحقق العام من المشاركة (PUBLIC QR — NO ACCOUNT)
+          ====================================================== -->
+          <section id="scr-verify" class="mobile-screen pb-24 px-3.5 pt-3.5 space-y-4">
+            <!-- Header & Input Card -->
+            <div class="bg-white rounded-[28px] p-4 shadow-cardSoft border border-softBorder text-center space-y-3">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">
+                <span>✓</span>
+                <span>صفحة تحقق عامة بدون حساب أو تسجيل دخول</span>
+              </span>
+              <h2 class="font-display text-lg font-black text-indigoDeep leading-tight">التحقق من المشاركة بالشارة</h2>
+
+              <div class="space-y-2">
+                <input id="mobVerifyInput" type="text" value="CSH-8299-ENV" placeholder="أدخل كود الشارة الفريد"
+                       class="w-full px-4 py-3 rounded-2xl bg-canvas border-2 border-softBorder focus:border-deepTeal focus:bg-white text-sm font-black text-center tracking-widest text-indigoDeep outline-none uppercase" />
+                <div class="grid grid-cols-5 gap-2">
+                  <button onclick="runMobVerify()" class="organic-btn col-span-3 py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow">
+                    تحقق الآن
+                  </button>
+                  <button onclick="runQrLaserSim()" class="organic-btn col-span-2 py-3 bg-indigo-grad text-white text-[11px] font-black flex items-center justify-center gap-1">
+                    <span>مسح QR</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Sample Chips (Synced with newly granted badges!) -->
+              <div class="pt-1 space-y-1.5">
+                <div class="text-[10px] font-bold text-slateMuted">أكواد سريعة للتجربة (تشمل الممنوحة حديثاً):</div>
+                <div id="mobVerifyChips" class="flex flex-wrap justify-center gap-1.5"></div>
+              </div>
+            </div>
+
+            <!-- Simulated Teal Laser QR Scanner Box -->
+            <div id="mobQrSimBox" class="hidden bg-indigo-grad rounded-[28px] p-5 text-white text-center space-y-3 shadow-cardHover">
+              <div class="text-xs font-black text-deepTealLight">جارٍ مسح رمز QR بالليزر الفيروزي...</div>
+              <div class="w-40 h-40 mx-auto rounded-3xl border-2 border-deepTealLight/75 bg-white/[0.06] relative overflow-hidden flex items-center justify-center">
+                <svg class="w-24 h-24 text-white/30" viewBox="0 0 29 29" fill="currentColor">
+                  <path d="M1 1h7v7H1V1zm1 1v5h5V2H2zm1 1h3v3H3V3zm18-2h7v7h-7V1zm1 1v5h5V2h-5zm1 1h3v3h-3V3zM1 21h7v7H1v-7zm1 1v5h5v-5H2zm1 1h3v3H3v-3z"/>
+                  <rect x="10" y="9" width="6" height="6"/><rect x="18" y="18" width="6" height="6"/>
+                </svg>
+                <div class="qr-laser-beam absolute inset-x-2.5 h-1 bg-deepTealLight shadow-[0_0_14px_#33C1D1] rounded-full"></div>
+              </div>
+              <div class="text-[10px] text-slate-300">مطابقة تلقائية فورية مع قاعدة شارات مجتمعنا</div>
+            </div>
+
+            <!-- Verification Verdict Card -->
+            <div id="mobVerifyCard" class="bg-white rounded-[28px] p-5 shadow-cardSoft border border-softBorder text-center space-y-4 relative overflow-hidden">
+              <div id="mvAura" class="absolute top-4 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full bg-calmEmerald/15 blur-3xl pointer-events-none"></div>
+
+              <div class="relative z-10 space-y-1">
+                <span id="mvStatusPill" class="inline-block px-3.5 py-1 rounded-full bg-calmEmerald/15 text-calmEmeraldDark text-[11px] font-black">مشارك مؤكد ✓</span>
+                <h3 id="mvTitle" class="font-display text-lg font-black text-indigoDeep pt-1">تم التحقق من المشاركة</h3>
+                <div id="mvCode" class="text-xs font-extrabold text-deepTealDark tracking-widest">CSH-8299-ENV</div>
+              </div>
+
+              <!-- Shield/Circular Badge Emblem -->
+              <div class="relative z-10 flex justify-center">
+                <div id="mvBadgeCircle" class="w-28 h-28 rounded-full bg-emerald-grad shadow-emeraldGlow p-2 flex items-center justify-center ring-4 ring-sandyGold/35">
+                  <div class="w-full h-full rounded-full border-2 border-white/50 flex flex-col items-center justify-center text-white">
+                    <span id="mvBadgeIcon" class="text-4xl">🌿</span>
+                    <span id="mvBadgeName" class="text-[10px] font-black mt-0.5">بطل البيئة</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative z-10 space-y-1">
+                <div id="mvEvent" class="font-display text-base font-black text-indigoDeep">مبادرة تشجير الحي</div>
+                <div id="mvOrg" class="text-xs font-bold text-slateMuted">الجمعية المانحة: جمعية سلمية للبيئة</div>
+                <div id="mvVolunteer" class="text-[11px] font-extrabold text-deepTealDark">المتطوع: سامي العلي</div>
+              </div>
+
+              <div class="relative z-10 flex justify-center pt-1">
+                <div id="mvSeal" class="verify-seal-pulse w-12 h-12 rounded-full bg-emerald-grad text-white flex items-center justify-center shadow-md">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div><!-- /phone-scroll -->
+
+
+        <!-- ========================================================
+             FLOATING BOTTOM NAVIGATION BAR (SCREENS 3, 4, 6, 7, 8)
+        ======================================================== -->
+        <nav id="mobileBottomNav" class="absolute bottom-3 inset-x-3 z-40 bg-white/95 backdrop-blur-md border border-softBorder rounded-[26px] px-2 py-2 shadow-cardHover flex items-center justify-around">
+          <!-- الرئيسية -->
+          <button data-bnav="scr-home" onclick="goScreen('scr-home')" class="bnav-btn organic-btn organic-sm flex flex-col items-center gap-0.5 px-2.5 py-1 text-deepTealDark">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span class="text-[9px] font-black">الرئيسية</span>
+          </button>
+
+          <!-- الجمعية والدليل -->
+          <button data-bnav="scr-charity" onclick="goScreen('scr-charity')" class="bnav-btn organic-btn organic-sm flex flex-col items-center gap-0.5 px-2.5 py-1 text-slateMuted">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <span class="text-[9px] font-black">الجمعية</span>
+          </button>
+
+          <!-- Central Elevated Deep Teal Organic Action Button -->
+          <button onclick="openVolunteerSheet(state.activeEventId)" title="تطوع سريع الآن" class="organic-btn -mt-7 w-13 h-13 p-3.5 bg-teal-grad text-white shadow-tealGlow border-4 border-canvas flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+
+          <!-- التحقق QR -->
+          <button data-bnav="scr-verify" onclick="goScreen('scr-verify')" class="bnav-btn organic-btn organic-sm flex flex-col items-center gap-0.5 px-2.5 py-1 text-slateMuted">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span class="text-[9px] font-black">التحقق QR</span>
+          </button>
+
+          <!-- حسابي والسيفي -->
+          <button data-bnav="scr-profile" onclick="goScreen('scr-profile')" class="bnav-btn organic-btn organic-sm flex flex-col items-center gap-0.5 px-2.5 py-1 text-slateMuted">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <span class="text-[9px] font-black">السيفي</span>
+          </button>
+        </nav>
+
+
+        <!-- ========================================================
+             SCREEN 5: نافذة التطوع المنبثقة ("أجب لتتطوع" — SPRING SHEET)
+        ======================================================== -->
+        <div id="volunteerSheet" class="sheet-overlay absolute inset-0 z-[75] bg-indigoDeep/50 backdrop-blur-xs flex items-end justify-center p-2.5">
+          <div class="sheet-card bg-white rounded-[30px] w-full p-5 shadow-2xl border border-softBorder space-y-3.5 max-h-[85%] overflow-y-auto">
+            <div class="w-11 h-1.5 rounded-full bg-softBorder mx-auto"></div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">أسئلة الفرز للحدث</span>
+                <h3 class="font-display text-lg font-black text-indigoDeep mt-1">أجب لتتطوع</h3>
+                <p id="volSheetEventTitle" class="text-[11px] font-extrabold text-deepTealDark">مبادرة تشجير الحي</p>
+              </div>
+              <button onclick="closeSheet('volunteerSheet')" class="organic-btn organic-sm w-8 h-8 bg-canvas text-slateMuted flex items-center justify-center text-xs">✕</button>
+            </div>
+
+            <form onsubmit="submitVolunteerApplication(event)" class="space-y-3">
+              <div>
+                <label class="block text-[11px] font-extrabold text-indigoDeep mb-1">اسم المتطوع</label>
+                <input id="volApplicantName" required type="text" value="سامي العلي" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal focus:bg-white text-xs font-bold outline-none" />
+              </div>
+              <div>
+                <label id="volSheetQ1" class="block text-[11px] font-extrabold text-indigoDeep mb-1">هل سبق لك المشاركة في مبادرات ميدانية؟</label>
+                <input id="volAns1" required type="text" placeholder="نعم، شاركت في عدة مبادرات سابقة..." class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal focus:bg-white text-xs outline-none" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-extrabold text-indigoDeep mb-1">ما الأوقات المناسبة لك؟</label>
+                <select id="volAns2" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal text-xs font-bold outline-none">
+                  <option value="متفرغ طوال ساعات المبادرة">متفرغ طوال ساعات المبادرة</option>
+                  <option value="الفترة الصباحية (09:00 - 12:00)">الفترة الصباحية (09:00 - 12:00)</option>
+                  <option value="الفترة المسائية فقط">الفترة المسائية فقط</option>
+                </select>
+              </div>
+              <button type="submit" class="organic-btn w-full py-3.5 bg-teal-grad text-white text-xs font-black shadow-tealGlow">
+                إرسال طلب التطوع
+              </button>
+            </form>
+          </div>
+        </div>
+
+
+        <!-- ========================================================
+             OTP 4-DIGIT VERIFICATION SPRING SHEET (FROM SCREEN 1)
+        ======================================================== -->
+        <div id="otpSheet" class="sheet-overlay absolute inset-0 z-[78] bg-indigoDark/65 backdrop-blur-xs flex items-end justify-center p-2.5">
+          <div class="sheet-card bg-white rounded-[30px] w-full p-5 shadow-2xl border border-softBorder text-center space-y-4">
+            <div class="w-11 h-1.5 rounded-full bg-softBorder mx-auto"></div>
+            <div class="space-y-1">
+              <span class="px-3 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">تحقق آمن عبر كود OTP</span>
+              <h3 class="font-display text-lg font-black text-indigoDeep">أدخل رمز التحقق (4 أرقام)</h3>
+              <p class="text-[11px] text-slateMuted">أرسلنا الرمز إلى حسابك — ينتقل المؤشر تلقائياً بين الخانات</p>
+            </div>
+            <form onsubmit="confirmOtpSheet(event)" class="space-y-4">
+              <div class="flex justify-center gap-2.5" dir="ltr">
+                <input type="text" inputmode="numeric" maxlength="1" value="5" class="mob-otp-box w-12 h-13 py-2.5 rounded-2xl bg-canvas border-2 border-softBorder focus:border-deepTeal focus:bg-white text-center text-xl font-black text-indigoDeep outline-none" />
+                <input type="text" inputmode="numeric" maxlength="1" value="2" class="mob-otp-box w-12 h-13 py-2.5 rounded-2xl bg-canvas border-2 border-softBorder focus:border-deepTeal focus:bg-white text-center text-xl font-black text-indigoDeep outline-none" />
+                <input type="text" inputmode="numeric" maxlength="1" value="8" class="mob-otp-box w-12 h-13 py-2.5 rounded-2xl bg-canvas border-2 border-softBorder focus:border-deepTeal focus:bg-white text-center text-xl font-black text-indigoDeep outline-none" />
+                <input type="text" inputmode="numeric" maxlength="1" value="4" class="mob-otp-box w-12 h-13 py-2.5 rounded-2xl bg-canvas border-2 border-softBorder focus:border-deepTeal focus:bg-white text-center text-xl font-black text-indigoDeep outline-none" />
+              </div>
+              <button type="submit" class="organic-btn w-full py-3.5 bg-teal-grad text-white text-xs font-black shadow-tealGlow">
+                تأكيد والانتقال لمعالج الاهتمامات ←
+              </button>
+              <button type="button" onclick="closeSheet('otpSheet')" class="organic-btn organic-sm w-full py-2 bg-canvas text-slateMuted text-[11px] font-bold">
+                تعديل البيانات
+              </button>
+            </form>
+          </div>
+        </div>
+
+
+        <!-- ========================================================
+             DYNAMIC UTILITY SPRING BOTTOM SHEET (COMMENTS, SHAM CASH, CV, CREATE EVENT, VERIFY, NOTIFS)
+        ======================================================== -->
+        <div id="utilSheet" class="sheet-overlay absolute inset-0 z-[80] bg-indigoDeep/50 backdrop-blur-xs flex items-end justify-center p-2.5">
+          <div class="sheet-card bg-white rounded-[30px] w-full p-5 shadow-2xl border border-softBorder max-h-[84%] overflow-y-auto space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="w-8"></span>
+              <div class="w-11 h-1.5 rounded-full bg-softBorder"></div>
+              <button onclick="closeSheet('utilSheet')" class="organic-btn organic-sm w-8 h-8 bg-canvas text-slateMuted flex items-center justify-center text-xs">✕</button>
+            </div>
+            <div id="utilSheetBody"></div>
+          </div>
+        </div>
+
+      </div><!-- /phone-viewport -->
+    </div><!-- /phone-frame -->
+
+  </div><!-- /desktop-stage -->
+
+
+  <!-- ============================================================
+       SHARED REACTIVE STATE, INLINE SVG SCENES & INTERACTION ENGINE
+  ============================================================ -->
+  <script>
+    /* ============================================================
+       1. SIGNATURE ORGANIC CORNER-FLIP + SPRING RIPPLE ENGINE
+    ============================================================ */
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.organic-btn');
+      if (!btn) return;
+
+      // Flip asymmetric organic corners smoothly on every click/tap
+      btn.classList.toggle('flipped');
+
+      // Re-trigger tactile spring bounce
+      btn.classList.remove('bouncing');
+      void btn.offsetWidth;
+      btn.classList.add('bouncing');
+
+      // Spawn luminous circular ripple from exact tap/click coordinates
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      const isLight =
+        btn.classList.contains('bg-white') ||
+        btn.classList.contains('bg-canvas') ||
+        btn.classList.contains('bg-icyTint') ||
+        btn.classList.contains('bg-berryTint') ||
+        btn.classList.contains('bg-[#ECF9F5]') ||
+        btn.classList.contains('bg-[#F3F1FC]');
+      ripple.className = isLight ? 'spring-ripple on-light' : 'spring-ripple';
+
+      const size = Math.max(rect.width, rect.height) * 0.52;
+      ripple.style.width = size + 'px';
+      ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 620);
+    });
+
+    /* ============================================================
+       2. CRISP CUSTOM INLINE SVG INITIATIVE SCENES (ZERO BROKEN IMAGES)
+    ============================================================ */
+    function getSceneSVG(sceneKey) {
+      const scenes = {
+        trees: `
+          <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="gSkyEnv" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#198996"/><stop offset="55%" stop-color="#1FA383"/><stop offset="100%" stop-color="#2AC29E"/></linearGradient>
+              <linearGradient id="gHill1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#168A6E"/><stop offset="100%" stop-color="#13263A"/></linearGradient>
+            </defs>
+            <rect width="400" height="210" fill="url(#gSkyEnv)"/>
+            <circle cx="325" cy="52" r="28" fill="#EBF6F8" opacity="0.24"/>
+            <circle cx="325" cy="52" r="18" fill="#FFFFFF" opacity="0.88"/>
+            <path d="M0 155 Q95 110 210 148 T400 132 L400 210 L0 210 Z" fill="#187D6C" opacity="0.72"/>
+            <path d="M0 172 Q130 136 260 165 T400 154 L400 210 L0 210 Z" fill="url(#gHill1)"/>
+            <!-- Stylized Trees & Saplings -->
+            <g transform="translate(70,86)">
+              <rect x="20" y="42" width="8" height="36" rx="4" fill="#D8AE67"/>
+              <circle cx="24" cy="30" r="26" fill="#2AC29E"/>
+              <circle cx="12" cy="40" r="17" fill="#33C1D1" opacity="0.85"/>
+              <circle cx="38" cy="38" r="18" fill="#1FA383"/>
+            </g>
+            <g transform="translate(175,98)">
+              <rect x="16" y="34" width="7" height="32" rx="3.5" fill="#D8AE67"/>
+              <circle cx="19" cy="24" r="22" fill="#33C1D1"/>
+              <circle cx="30" cy="30" r="15" fill="#2AC29E"/>
+            </g>
+            <g transform="translate(268,94)">
+              <rect x="18" y="36" width="7" height="30" rx="3.5" fill="#C99B52"/>
+              <circle cx="21" cy="24" r="23" fill="#2AC29E"/>
+              <circle cx="10" cy="32" r="14" fill="#EBF6F8" opacity="0.35"/>
+            </g>
+            <!-- Soft floating leaves -->
+            <ellipse cx="145" cy="64" rx="8" ry="4" transform="rotate(-25 145 64)" fill="#FFFFFF" opacity="0.5"/>
+            <ellipse cx="242" cy="54" rx="7" ry="3.5" transform="rotate(20 242 54)" fill="#FFFFFF" opacity="0.45"/>
+          </svg>`,
+
+        warmth: `
+          <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="gHumBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#13263A"/><stop offset="52%" stop-color="#B84863"/><stop offset="100%" stop-color="#E36F8B"/></linearGradient>
+            </defs>
+            <rect width="400" height="210" fill="url(#gHumBg)"/>
+            <circle cx="88" cy="58" r="46" fill="#FFFFFF" opacity="0.1"/>
+            <circle cx="330" cy="48" r="32" fill="#33C1D1" opacity="0.18"/>
+            <path d="M0 156 Q120 126 240 155 T400 140 L400 210 L0 210 Z" fill="#13263A" opacity="0.72"/>
+            <!-- Care Box & Heart Emblem -->
+            <g transform="translate(152,62)">
+              <rect x="6" y="42" width="84" height="58" rx="14" fill="#FFFFFF" opacity="0.95"/>
+              <rect x="0" y="32" width="96" height="18" rx="8" fill="#EBF6F8"/>
+              <rect x="42" y="32" width="12" height="68" fill="#23A6B5"/>
+              <path d="M48 26 C48 26 28 14 28 4 C28 -3 35 -6 41 -2 C44 0 47 4 48 6 C49 4 52 0 55 -2 C61 -6 68 -3 68 4 C68 14 48 26 48 26 Z" fill="#D8AE67"/>
+            </g>
+            <!-- Soft Snowflakes / Stars -->
+            <circle cx="105" cy="94" r="3.5" fill="#FFFFFF" opacity="0.65"/>
+            <circle cx="294" cy="86" r="4" fill="#FFFFFF" opacity="0.6"/>
+            <circle cx="272" cy="116" r="2.5" fill="#33C1D1" opacity="0.8"/>
+            <circle cx="128" cy="46" r="2.5" fill="#FFFFFF" opacity="0.7"/>
+          </svg>`,
+
+        animals: `
+          <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="gAniBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1C3550"/><stop offset="50%" stop-color="#5E4BB0"/><stop offset="100%" stop-color="#8A76E0"/></linearGradient>
+            </defs>
+            <rect width="400" height="210" fill="url(#gAniBg)"/>
+            <circle cx="310" cy="54" r="42" fill="#33C1D1" opacity="0.18"/>
+            <path d="M0 162 Q130 128 260 156 T400 144 L400 210 L0 210 Z" fill="#13263A" opacity="0.58"/>
+            <!-- Stylized Paw & Medical Care Shield -->
+            <g transform="translate(148,54)">
+              <rect x="8" y="8" width="88" height="88" rx="28" fill="#FFFFFF" opacity="0.16"/>
+              <ellipse cx="52" cy="64" rx="22" ry="18" fill="#FFFFFF" opacity="0.95"/>
+              <circle cx="30" cy="42" r="8.5" fill="#EBF6F8"/>
+              <circle cx="45" cy="32" r="8.5" fill="#EBF6F8"/>
+              <circle cx="60" cy="32" r="8.5" fill="#EBF6F8"/>
+              <circle cx="74" cy="42" r="8.5" fill="#EBF6F8"/>
+              <!-- Teal Care Cross inside Paw -->
+              <rect x="49" y="55" width="6" height="18" rx="3" fill="#23A6B5"/>
+              <rect x="43" y="61" width="18" height="6" rx="3" fill="#23A6B5"/>
+            </g>
+            <circle cx="88" cy="84" r="4" fill="#FFFFFF" opacity="0.55"/>
+            <circle cx="322" cy="110" r="3" fill="#2AC29E" opacity="0.8"/>
+          </svg>`,
+
+        recycle: `
+          <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="gRecBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#13263A"/><stop offset="52%" stop-color="#198996"/><stop offset="100%" stop-color="#33C1D1"/></linearGradient>
+            </defs>
+            <rect width="400" height="210" fill="url(#gRecBg)"/>
+            <path d="M0 160 Q140 120 270 158 T400 140 L400 210 L0 210 Z" fill="#168A6E" opacity="0.65"/>
+            <g transform="translate(152,50)">
+              <circle cx="48" cy="48" r="42" fill="#FFFFFF" opacity="0.16"/>
+              <circle cx="48" cy="48" r="30" fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-dasharray="36 14" stroke-linecap="round"/>
+              <path d="M48 30 C56 38 58 50 48 64 C38 50 40 38 48 30 Z" fill="#2AC29E"/>
+              <line x1="48" y1="38" x2="48" y2="62" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>
+            </g>
+          </svg>`,
+
+        education: `
+          <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="gEduBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1C3550"/><stop offset="55%" stop-color="#23A6B5"/><stop offset="100%" stop-color="#D45D79"/></linearGradient>
+            </defs>
+            <rect width="400" height="210" fill="url(#gEduBg)"/>
+            <path d="M0 164 Q120 130 250 160 T400 144 L400 210 L0 210 Z" fill="#13263A" opacity="0.62"/>
+            <g transform="translate(148,58)">
+              <rect x="6" y="28" width="42" height="54" rx="8" fill="#FFFFFF" opacity="0.94"/>
+              <rect x="52" y="28" width="42" height="54" rx="8" fill="#EBF6F8"/>
+              <line x1="16" y1="44" x2="38" y2="44" stroke="#23A6B5" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="16" y1="56" x2="34" y2="56" stroke="#D45D79" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="62" y1="44" x2="84" y2="44" stroke="#1FA383" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="62" y1="56" x2="80" y2="56" stroke="#7360C6" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="50" cy="14" r="10" fill="#D8AE67"/>
+            </g>
+          </svg>`
+      };
+      return scenes[sceneKey] || scenes.trees;
+    }
+
+    /* ============================================================
+       3. SHARED LIVE STATE ACROSS ALL 8 MOBILE SCREENS
+    ============================================================ */
+    const CAT_INFO = {
+      all: {
+        label: 'الكل',
+        suffix: 'ALL',
+        pillCls: 'bg-teal-grad text-white',
+        subtopics: ['تشجير وتجميل', 'دفء شتوي', 'رعاية بيطرية', 'إعادة تدوير', 'دعم تعليمي']
+      },
+      humanitarian: {
+        label: 'عمل إنساني مجتمعي',
+        suffix: 'HUM',
+        pillCls: 'bg-berry-grad text-white',
+        subtopics: ['دفء شتوي', 'سلال غذائية', 'دعم تعليمي', 'إغاثة عاجلة']
+      },
+      environment: {
+        label: 'جانب بيئي',
+        suffix: 'ENV',
+        pillCls: 'bg-emerald-grad text-white',
+        subtopics: ['تشجير وتجميل', 'إعادة تدوير', 'تنظيف الحدائق']
+      },
+      animals: {
+        label: 'رعاية الحيوانات',
+        suffix: 'ANI',
+        pillCls: 'bg-iris-grad text-white',
+        subtopics: ['رعاية بيطرية', 'إنقاذ وإيواء', 'إطعام ميداني']
+      }
+    };
+
+    const BANNED_WORDS = ['كذب', 'نصب', 'احتيال', 'سب', 'شتيمة', 'إساءة'];
+
+    const state = {
+      currentScreen: 'scr-home',
+      userName: 'سامي العلي',
+      wizardStep: 1,
+      wizardInterests: new Set(['environment']),
+      homeCat: 'all',
+      homeSub: null,
+      homeSort: 'latest',
+      homeSearch: '',
+      activeEventId: 1,
+
+      events: [
+        {
+          id: 1,
+          title: 'مبادرة تشجير الحي',
+          cat: 'environment',
+          sub: 'تشجير وتجميل',
+          org: 'جمعية سلمية للبيئة',
+          orgLetter: 'س',
+          orgColor: 'bg-emerald-grad',
+          loc: 'الحديقة العامة الشمالية — سلمية',
+          date: 'الجمعة 20 نوفمبر • 09:00 ص',
+          joined: 18,
+          limit: 25,
+          upvotes: 168,
+          upvoted: false,
+          userCommented: false,
+          comments: [{ author: 'رامي حسن', text: 'مبادرة رائعة ومنظمة، متحمس للمشاركة!' }],
+          question: 'هل سبق لك المشاركة في مبادرات ميدانية أو تشجير؟',
+          shamCash: 'shamcash://salamiyah-env-2026',
+          scene: 'trees',
+          desc: 'حملة مجتمعية لزراعة 250 غرسة حراجية ومثمرة في الحي والحديقة العامة الشمالية بمشاركة المتطوعين، مع توثيق خارجي معتمد ومنح شارة «بطل البيئة» بكود فريد.'
+        },
+        {
+          id: 2,
+          title: 'قافلة الدفء الشتوية',
+          cat: 'humanitarian',
+          sub: 'دفء شتوي',
+          org: 'سواعد العطاء الإنساني',
+          orgLetter: 'ع',
+          orgColor: 'bg-berry-grad',
+          loc: 'المركز المجتمعي الشرقي',
+          date: 'السبت 21 نوفمبر • 10:30 ص',
+          joined: 22,
+          limit: 30,
+          upvotes: 224,
+          upvoted: true,
+          userCommented: false,
+          comments: [{ author: 'لينا علي', text: 'شكراً للشفافية العالية والتنظيم الميداني.' }],
+          question: 'هل تستطيع المساعدة في التوضيب والتوزيع لمدة 4 ساعات؟',
+          shamCash: 'shamcash://sawaed-winter-2026',
+          scene: 'warmth',
+          desc: 'تجهيز وتوزيع مستلزمات الدفء والبطانيات والسلال الغذائية للأسر الأشد احتياجاً، مع خيار الدعم الخارجي المباشر عبر QR شام كاش أو التطوع الميداني.'
+        },
+        {
+          id: 3,
+          title: 'عيادة رعاية الحيوانات الأليفة',
+          cat: 'animals',
+          sub: 'رعاية بيطرية',
+          org: 'مبادرة رفق للحيوانات',
+          orgLetter: 'ر',
+          orgColor: 'bg-iris-grad',
+          loc: 'الحي الغربي • نقطة الإنقاذ',
+          date: 'الأحد 22 نوفمبر • 04:00 م',
+          joined: 11,
+          limit: 16,
+          upvotes: 119,
+          upvoted: false,
+          userCommented: false,
+          comments: [],
+          question: 'هل لديك خبرة سابقة في التعامل اللطيف مع الحيوانات؟',
+          shamCash: 'shamcash://refq-clinic-2026',
+          scene: 'animals',
+          desc: 'يوم تطوعي ميداني بإشراف أطباء بيطريين متطوعين لتقديم اللقاحات والإسعافات الأولية وإطعام الحيوانات المشردة وتنظيم التبنّي المسؤول.'
+        },
+        {
+          id: 4,
+          title: 'ورشة إعادة التدوير وتجميل المرافق',
+          cat: 'environment',
+          sub: 'إعادة تدوير',
+          org: 'جمعية سلمية للبيئة',
+          orgLetter: 'س',
+          orgColor: 'bg-teal-grad',
+          loc: 'ساحة الياسمين المجتمعية',
+          date: 'الثلاثاء 24 نوفمبر • 09:30 ص',
+          joined: 13,
+          limit: 20,
+          upvotes: 135,
+          upvoted: false,
+          userCommented: false,
+          comments: [],
+          question: 'هل تفضل فرز المواد القابلة للتدوير أم التوعية؟',
+          shamCash: 'shamcash://salamiyah-recycle-2026',
+          scene: 'recycle',
+          desc: 'تجميع وفرز الورق والبلاستيك لتحويلها إلى حاويات فرز ملونة ومقاعد صديقة للبيئة بمشاركة شباب الحي.'
+        },
+        {
+          id: 5,
+          title: 'مبادرة الحقائب المدرسية والدعم التعليمي',
+          cat: 'humanitarian',
+          sub: 'دعم تعليمي',
+          org: 'مبادرة نور المعرفة',
+          orgLetter: 'ن',
+          orgColor: 'bg-indigo-grad',
+          loc: 'المكتبة الثقافية العامة',
+          date: 'الأربعاء 25 نوفمبر • 03:00 م',
+          joined: 9,
+          limit: 14,
+          upvotes: 187,
+          upvoted: false,
+          userCommented: false,
+          comments: [],
+          question: 'ما المادة الدراسية التي يمكنك تدريسها أو دعمها؟',
+          shamCash: 'shamcash://noor-edu-2026',
+          scene: 'education',
+          desc: 'دروس تقوية مجانية منظمة لطلبة الشهادتين وتوزيع حقائب قرطاسية أساسية للمحتاجين.'
+        }
+      ],
+
+      applicants: [
+        { id: 201, name: 'ندى محمود', event: 'مبادرة تشجير الحي', cat: 'environment', answer: 'خبرة في العمل التطوعي البيئي ومتفرغة صباحاً', status: 'pending', badgeCode: null },
+        { id: 202, name: 'عمر الشامي', event: 'قافلة الدفء الشتوية', cat: 'humanitarian', answer: 'متاح طوال اليوم وأمتلك سيارة للمساعدة بالنقل', status: 'pending', badgeCode: null }
+      ],
+
+      badges: {
+        'CSH-8299-ENV': {
+          code: 'CSH-8299-ENV',
+          title: 'بطل البيئة',
+          event: 'مبادرة تشجير الحي',
+          org: 'جمعية سلمية للبيئة',
+          orgLetter: 'س',
+          volunteer: 'سامي العلي',
+          cat: 'environment',
+          icon: '🌿',
+          ringCls: 'bg-emerald-grad shadow-emeraldGlow',
+          date: '12 نوفمبر 2026'
+        },
+        'CSH-4102-HUM': {
+          code: 'CSH-4102-HUM',
+          title: 'سفير الدفء الإنساني',
+          event: 'قافلة الدفء الشتوية',
+          org: 'سواعد العطاء الإنساني',
+          orgLetter: 'ع',
+          volunteer: 'سامي العلي',
+          cat: 'humanitarian',
+          icon: '♥',
+          ringCls: 'bg-berry-grad shadow-berryGlow',
+          date: '28 أكتوبر 2026'
+        },
+        'CSH-3074-ANI': {
+          code: 'CSH-3074-ANI',
+          title: 'رفيق الكائنات',
+          event: 'عيادة رعاية الحيوانات الأليفة',
+          org: 'مبادرة رفق للحيوانات',
+          orgLetter: 'ر',
+          volunteer: 'سامي العلي',
+          cat: 'animals',
+          icon: '🐾',
+          ringCls: 'bg-iris-grad shadow-irisGlow',
+          date: '15 أكتوبر 2026'
+        }
+      },
+
+      directory: [
+        { id: 1, name: 'جمعية سلمية للبيئة', role: 'جمعية موثقة', mou: 'مذكرة تفاهم #MOU-01', followers: 1290, following: true, letter: 'س', color: 'bg-emerald-grad' },
+        { id: 2, name: 'سواعد العطاء الإنساني', role: 'جمعية موثقة', mou: 'مذكرة تفاهم #MOU-04', followers: 2140, following: false, letter: 'ع', color: 'bg-berry-grad' },
+        { id: 3, name: 'مبادرة رفق للحيوانات', role: 'جمعية موثقة', mou: 'مذكرة تفاهم #MOU-07', followers: 685, following: false, letter: 'ر', color: 'bg-iris-grad' },
+        { id: 4, name: 'د. سامر الحسن', role: 'شخص موثوق ★', mou: 'تفويض معتمد للمراجعة', followers: 910, following: true, letter: 'د', color: 'bg-indigo-grad' }
+      ],
+
+      trustedQueue: [
+        { id: 601, author: 'طارق العبدالله', cat: 'humanitarian', title: 'مبادرة تبادل الكتب الجامعية مجاناً', desc: 'طاولة مجتمعية لتبادل الكتب الهندسية والطبية بين طلبة الجامعة مجاناً.', scene: 'education' },
+        { id: 602, author: 'هبة السالم', cat: 'animals', title: 'حملة توفير مياه الشرب للقطط بالحدائق', desc: 'توزيع أوعية مياه نظيفة وتفقدها يومياً في 4 حدائق عامة بالمدينة.', scene: 'animals' }
+      ],
+
+      notifications: [
+        { id: 1, text: 'حصلت على شارة «بطل البيئة» بكود CSH-8299-ENV من جمعية سلمية للبيئة', time: 'منذ 12 دقيقة', unread: true },
+        { id: 2, text: 'مبادرة تشجير الحي متاحة للتطوع الميداني حالياً', time: 'منذ ساعة', unread: true },
+        { id: 3, text: 'تم تفعيل ثيم الفيروزي العميق الهادئ على كافة واجهات التطبيق', time: 'اليوم', unread: true }
+      ]
+    };
+
+    /* ============================================================
+       4. NAVIGATION & SYNCHRONIZATION
+    ============================================================ */
+    function goScreen(screenId) {
+      closeSheet('volunteerSheet');
+      closeSheet('otpSheet');
+      closeSheet('utilSheet');
+
+      state.currentScreen = screenId;
+
+      document.querySelectorAll('.mobile-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+
+      // Status bar contrast: light text on Indigo splash, dark indigo text on Light screens
+      const sb = document.getElementById('phoneStatusBar');
+      if (screenId === 'scr-welcome') {
+        sb.className = 'status-bar text-white bg-indigoDeep';
+      } else {
+        sb.className = 'status-bar text-indigoDeep bg-white';
+      }
+
+      // Hide bottom nav on Welcome & Wizard screens
+      const hideNav = screenId === 'scr-welcome' || screenId === 'scr-wizard';
+      document.getElementById('mobileBottomNav').classList.toggle('hidden', hideNav);
+
+      // Update Bottom Nav active color
+      document.querySelectorAll('.bnav-btn').forEach(b => {
+        const active = b.dataset.bnav === screenId;
+        b.classList.toggle('text-deepTealDark', active);
+        b.classList.toggle('bg-icyTint', active);
+        b.classList.toggle('text-slateMuted', !active);
+      });
+
+      // Update Desktop External Quick-Switcher active highlight
+      document.querySelectorAll('.ext-nav-btn').forEach(btn => {
+        btn.classList.toggle('ext-active', btn.dataset.ext === screenId);
+      });
+
+      // Refresh target screen data
+      if (screenId === 'scr-home') renderMobHomeFeed();
+      if (screenId === 'scr-event') renderEventDetails();
+      if (screenId === 'scr-profile') renderProfile();
+      if (screenId === 'scr-charity') renderCharityAndDirectory();
+      if (screenId === 'scr-verify') { renderVerifyChips(); runMobVerify(); }
+
+      document.getElementById('phoneScroll').scrollTop = 0;
+    }
+
+    function syncCounters() {
+      const pending = state.applicants.filter(a => a.status === 'pending').length;
+      const badgesCount = Object.keys(state.badges).length;
+      const eventsCount = state.events.length;
+
+      document.getElementById('syncPending').textContent = pending;
+      document.getElementById('syncBadges').textContent = badgesCount;
+      document.getElementById('syncEvents').textContent = eventsCount;
+      document.getElementById('chPendingPill').textContent = `${pending} معلق`;
+      document.getElementById('mobQueueCount').textContent = state.trustedQueue.length;
+
+      const unread = state.notifications.filter(n => n.unread).length;
+      const dot = document.getElementById('homeNotifBadge');
+      dot.textContent = unread;
+      dot.classList.toggle('hidden', unread === 0);
+    }
+
+    function openSheet(id) { document.getElementById(id).classList.add('open'); }
+    function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+    function openUtilSheet(html) {
+      document.getElementById('utilSheetBody').innerHTML = html;
+      openSheet('utilSheet');
+    }
+
+    /* ============================================================
+       5. SCREEN 1: WELCOME, REGISTER & 4-DIGIT OTP
+    ============================================================ */
+    function setMobAuthTab(tab) {
+      const isReg = tab === 'reg';
+      document.getElementById('mobAuthForm-reg').classList.toggle('hidden', !isReg);
+      document.getElementById('mobAuthForm-log').classList.toggle('hidden', isReg);
+      document.getElementById('mobAuthBtn-reg').className = isReg
+        ? 'organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-tealGlow'
+        : 'organic-btn organic-sm py-2 text-xs font-extrabold text-slate-300';
+      document.getElementById('mobAuthBtn-log').className = !isReg
+        ? 'organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-tealGlow'
+        : 'organic-btn organic-sm py-2 text-xs font-extrabold text-slate-300';
+    }
+
+    function openOtpSheet(e) {
+      e.preventDefault();
+      const name = document.getElementById('mobRegName').value.trim();
+      if (name) {
+        state.userName = name;
+        document.getElementById('profName').textContent = name;
+        document.getElementById('volApplicantName').value = name;
+      }
+      openSheet('otpSheet');
+      setTimeout(() => {
+        const first = document.querySelector('.mob-otp-box');
+        if (first) first.focus();
+      }, 120);
+      showMobileToast('تم إرسال رمز التحقق OTP المكون من 4 أرقام ✓', 'teal');
+    }
+
+    function confirmOtpSheet(e) {
+      e.preventDefault();
+      closeSheet('otpSheet');
+      setMobWizardStep(1);
+      goScreen('scr-wizard');
+      showMobileToast('تم التحقق بنجاح! اختر مجالات اهتمامك الآن ✓', 'emerald');
+    }
+
+    function submitMobLogin(e) {
+      e.preventDefault();
+      goScreen('scr-home');
+      showMobileToast(`أهلاً بعودتك يا ${state.userName}!`, 'teal');
+    }
+
+    // Auto-focus jump between the 4 OTP boxes
+    document.querySelectorAll('.mob-otp-box').forEach((box, i, arr) => {
+      box.addEventListener('input', () => {
+        box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+        if (box.value && i < arr.length - 1) arr[i + 1].focus();
+      });
+      box.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Backspace' && !box.value && i > 0) arr[i - 1].focus();
+      });
+    });
+
+    /* ============================================================
+       6. SCREEN 2: 3-STEP INTERESTS WIZARD
+    ============================================================ */
+    function toggleMobWizInterest(cat) {
+      if (state.wizardInterests.has(cat)) {
+        if (state.wizardInterests.size === 1) {
+          showMobileToast('اختيار مجال واحد على الأقل إجباري في هذه الخطوة', 'berry');
+          return;
+        }
+        state.wizardInterests.delete(cat);
+      } else {
+        state.wizardInterests.add(cat);
+      }
+
+      const activeClasses = {
+        environment:  { box: 'organic-btn flipped w-full p-3.5 bg-[#ECF9F5] border-2 border-calmEmerald text-right flex items-center justify-between gap-3', tick: 'w-6 h-6 rounded-full bg-emerald-grad text-white text-xs font-black flex items-center justify-center shrink-0' },
+        humanitarian: { box: 'organic-btn flipped w-full p-3.5 bg-berryTint border-2 border-softBerry text-right flex items-center justify-between gap-3', tick: 'w-6 h-6 rounded-full bg-berry-grad text-white text-xs font-black flex items-center justify-center shrink-0' },
+        animals:      { box: 'organic-btn flipped w-full p-3.5 bg-[#F3F1FC] border-2 border-softIris text-right flex items-center justify-between gap-3', tick: 'w-6 h-6 rounded-full bg-iris-grad text-white text-xs font-black flex items-center justify-center shrink-0' }
+      };
+
+      ['environment', 'humanitarian', 'animals'].forEach(k => {
+        const on = state.wizardInterests.has(k);
+        const node = document.getElementById('wizNode-' + k);
+        const tick = document.getElementById('wizTick-' + k);
+        const path = document.getElementById('wizTreeSvg-' + k);
+
+        node.className = on ? activeClasses[k].box : 'organic-btn w-full p-3.5 bg-canvas border-2 border-softBorder text-right flex items-center justify-between gap-3';
+        tick.className = on ? activeClasses[k].tick : 'w-6 h-6 rounded-full bg-softBorder text-slateMuted text-xs font-black flex items-center justify-center shrink-0';
+        tick.textContent = on ? '✓' : '+';
+        if (path) {
+          path.classList.toggle('branch-lit', on);
+          path.setAttribute('opacity', on ? '1' : '0.35');
+        }
+      });
+    }
+
+    function setMobWizardStep(step) {
+      state.wizardStep = step;
+      const subtitles = {
+        1: 'الخطوة 1 من 3 • الاهتمامات (إجبارية)',
+        2: 'الخطوة 2 من 3 • المعلومات الشخصية (تخطي)',
+        3: 'الخطوة 3 من 3 • الفرق التطوعية (تخطي)'
+      };
+      document.getElementById('wizStepSubtitle').textContent = subtitles[step];
+      [1, 2, 3].forEach(n => {
+        document.getElementById('mobWizPane' + n).classList.toggle('hidden', n !== step);
+        const dot = document.getElementById('wizDot' + n);
+        dot.className = n === step
+          ? 'h-2 w-8 rounded-full bg-teal-grad transition-all duration-300'
+          : (n < step ? 'h-2 w-4 rounded-full bg-calmEmerald transition-all duration-300' : 'h-2 w-2.5 rounded-full bg-softBorder transition-all duration-300');
+      });
+      document.getElementById('mobWizNextBtn').querySelector('span').textContent =
+        step === 3 ? 'إنهاء ودخول الرئيسية' : 'التالي';
+    }
+
+    function mobWizardNext() {
+      if (state.wizardStep < 3) {
+        setMobWizardStep(state.wizardStep + 1);
+      } else {
+        finishMobWizard();
+      }
+    }
+
+    function mobWizardSkip() {
+      if (state.wizardStep === 1) {
+        setMobWizardStep(2);
+      } else if (state.wizardStep === 2) {
+        setMobWizardStep(3);
+      } else {
+        finishMobWizard();
+      }
+    }
+
+    function finishMobWizard() {
+      const primary = Array.from(state.wizardInterests)[0] || 'humanitarian';
+      goScreen('scr-home');
+      selectMobCategory(primary);
+      showMobileToast(`تم تصفية الرئيسية حسب اهتمامك: ${CAT_INFO[primary].label}`, 'teal');
+    }
+
+    function toggleMobTeamJoin(btn) {
+      const joined = btn.dataset.joined === '1';
+      btn.dataset.joined = joined ? '0' : '1';
+      btn.textContent = joined ? 'انضمام' : 'منضم ✓';
+      if (!joined) showMobileToast('تم الانضمام للفريق التطوعي ✓', 'emerald');
+    }
+
+    /* ============================================================
+       7. SCREEN 3: HOME FEED, HORIZONTAL SVG TREE & INTERACTIONS
+    ============================================================ */
+    function toggleHomeSearch() {
+      const wrap = document.getElementById('homeSearchWrap');
+      wrap.classList.toggle('hidden');
+      if (!wrap.classList.contains('hidden')) document.getElementById('homeSearchInput').focus();
+    }
+
+    function setHomeSearch(val) {
+      state.homeSearch = val.trim().toLowerCase();
+      renderMobHomeFeed();
+    }
+
+    function selectMobCategory(cat) {
+      state.homeCat = cat;
+      state.homeSub = null;
+
+      // Illuminate selected SVG curve
+      document.querySelectorAll('[id^="mobTree-"]').forEach(p => {
+        p.classList.remove('branch-lit');
+        p.setAttribute('opacity', '0.35');
+      });
+      const lit = document.getElementById('mobTree-' + cat);
+      if (lit) lit.classList.add('branch-lit');
+
+      const activeStyle = {
+        all:          'mob-tree-leaf organic-btn organic-sm flipped py-2 px-1 bg-teal-grad text-white shadow-tealGlow flex flex-col items-center gap-1',
+        humanitarian: 'mob-tree-leaf organic-btn organic-sm flipped py-2 px-1 bg-berry-grad text-white shadow-berryGlow flex flex-col items-center gap-1',
+        environment:  'mob-tree-leaf organic-btn organic-sm flipped py-2 px-1 bg-emerald-grad text-white shadow-emeraldGlow flex flex-col items-center gap-1',
+        animals:      'mob-tree-leaf organic-btn organic-sm flipped py-2 px-1 bg-iris-grad text-white shadow-irisGlow flex flex-col items-center gap-1'
+      };
+      const idleStyle = {
+        all:          'mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-icyTint border border-deepTeal/30 text-indigoDeep flex flex-col items-center gap-1',
+        humanitarian: 'mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-berryTint border border-softBerry/30 text-indigoDeep flex flex-col items-center gap-1',
+        environment:  'mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-[#ECF9F5] border border-calmEmerald/30 text-indigoDeep flex flex-col items-center gap-1',
+        animals:      'mob-tree-leaf organic-btn organic-sm py-2 px-1 bg-[#F3F1FC] border border-softIris/30 text-indigoDeep flex flex-col items-center gap-1'
+      };
+
+      document.querySelectorAll('.mob-tree-leaf').forEach(leaf => {
+        const k = leaf.dataset.mcat;
+        leaf.className = k === cat ? activeStyle[k] : idleStyle[k];
+      });
+
+      renderMobSubtopics();
+      renderMobHomeFeed();
+    }
+
+    function renderMobSubtopics() {
+      const bar = document.getElementById('mobSubtopicsBar');
+      const subs = CAT_INFO[state.homeCat].subtopics;
+      bar.innerHTML =
+        `<button onclick="selectMobSub(null)" class="organic-btn organic-sm shrink-0 px-3 py-1 text-[10px] font-black ${!state.homeSub ? 'bg-indigo-grad text-white' : 'bg-canvas text-slateMuted'}">الكل</button>` +
+        subs.map(s => `
+          <button onclick="selectMobSub('${s}')" class="organic-btn organic-sm shrink-0 px-3 py-1 text-[10px] font-extrabold ${state.homeSub === s ? 'bg-teal-grad text-white shadow-sm' : 'bg-icyTint/80 text-indigoDeep'}">${s}</button>
+        `).join('');
+    }
+
+    function selectMobSub(sub) {
+      state.homeSub = sub;
+      renderMobSubtopics();
+      renderMobHomeFeed();
+    }
+
+    function setMobSort(mode) {
+      state.homeSort = mode;
+      document.getElementById('mobSortLatest').className = mode === 'latest'
+        ? 'organic-btn organic-sm flipped px-3 py-1 text-[10px] font-black bg-teal-grad text-white'
+        : 'organic-btn organic-sm px-3 py-1 text-[10px] font-extrabold text-slateMuted';
+      document.getElementById('mobSortTop').className = mode === 'top'
+        ? 'organic-btn organic-sm flipped px-3 py-1 text-[10px] font-black bg-teal-grad text-white'
+        : 'organic-btn organic-sm px-3 py-1 text-[10px] font-extrabold text-slateMuted';
+      renderMobHomeFeed();
+    }
+
+    function renderMobHomeFeed() {
+      let list = [...state.events];
+      if (state.homeCat !== 'all') list = list.filter(e => e.cat === state.homeCat);
+      if (state.homeSub) {
+        const match = list.filter(e => e.sub === state.homeSub);
+        if (match.length) list = match;
+      }
+      if (state.homeSearch) {
+        list = list.filter(e =>
+          e.title.toLowerCase().includes(state.homeSearch) ||
+          e.org.toLowerCase().includes(state.homeSearch) ||
+          e.loc.toLowerCase().includes(state.homeSearch)
+        );
+      }
+      if (state.homeSort === 'top') list.sort((a, b) => b.upvotes - a.upvotes);
+
+      document.getElementById('mobFeedTitle').textContent =
+        state.homeCat === 'all' ? 'أحدث المبادرات المجتمعية' : CAT_INFO[state.homeCat].label;
+
+      const wrap = document.getElementById('mobFeedList');
+      if (!list.length) {
+        wrap.innerHTML = `
+          <div class="bg-white rounded-[26px] p-7 text-center border border-softBorder space-y-2.5">
+            <div class="text-2xl">🔎</div>
+            <div class="text-xs font-black text-indigoDeep">لا توجد مبادرات مطابقة حالياً</div>
+            <button onclick="document.getElementById('homeSearchInput').value=''; setHomeSearch(''); selectMobCategory('all')" class="organic-btn organic-sm px-4 py-2 bg-teal-grad text-white text-[11px] font-black">عرض الكل</button>
+          </div>`;
+        return;
+      }
+
+      wrap.innerHTML = list.map(ev => {
+        const meta = CAT_INFO[ev.cat] || CAT_INFO.environment;
+        const pct = Math.min(100, Math.round((ev.joined / ev.limit) * 100));
+        return `
+          <article class="bg-white rounded-[26px] overflow-hidden shadow-cardSoft border border-softBorder">
+            <!-- Custom Illustrated Banner -->
+            <div onclick="openEventDetails(${ev.id})" class="relative h-40 w-full cursor-pointer overflow-hidden">
+              ${getSceneSVG(ev.scene)}
+              <div class="absolute inset-0 bg-gradient-to-t from-indigoDeep/75 via-transparent to-transparent"></div>
+              <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-black shadow-sm ${meta.pillCls}">${meta.label}</span>
+              <button onclick="event.stopPropagation(); reportMobPost(${ev.id})" title="إبلاغ" class="organic-btn organic-sm w-7 h-7 bg-white/90 text-slateMuted hover:text-softBerryDark flex items-center justify-center absolute top-3 left-3 text-[11px]">⚑</button>
+              <div class="absolute bottom-2.5 right-3 text-white text-[10px] font-extrabold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-deepTealLight"></span>
+                <span>${ev.org} ✓</span>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-3.5 space-y-2.5">
+              <div>
+                <h4 onclick="openEventDetails(${ev.id})" class="font-display text-sm font-black text-indigoDeep cursor-pointer leading-snug">${ev.title}</h4>
+                <div class="text-[10px] font-semibold text-slateMuted mt-1 flex items-center gap-1.5 flex-wrap">
+                  <span>📍 ${ev.loc}</span>
+                  <span>•</span>
+                  <span>📅 ${ev.date.split('•')[0]}</span>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px] font-bold">
+                  <span class="text-slateMuted">المتطوعين المطلوبين</span>
+                  <span class="text-indigoDeep font-black">${ev.joined} / ${ev.limit}</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-icyTint overflow-hidden">
+                  <div class="h-full bg-teal-grad rounded-full transition-all duration-500" style="width:${pct}%"></div>
+                </div>
+              </div>
+
+              <!-- Social Controls -->
+              <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-softBorder/70">
+                <div class="flex items-center gap-1.5">
+                  <button onclick="toggleMobUpvote(${ev.id})" class="organic-btn organic-sm px-2.5 py-1.5 text-[10px] font-black flex items-center gap-1 ${ev.upvoted ? 'bg-icyTint text-deepTealDark border border-deepTeal/40' : 'bg-canvas text-slateMuted'}">
+                    <span>↑</span>
+                    <span>${ev.upvotes}</span>
+                  </button>
+                  <button onclick="openCommentSheet(${ev.id})" class="organic-btn organic-sm px-2.5 py-1.5 text-[10px] font-bold bg-canvas text-slateMuted">
+                    💬 ${ev.comments.length}
+                  </button>
+                </div>
+                <button onclick="openShamCashSheet(${ev.id})" class="organic-btn organic-sm px-2.5 py-1.5 text-[10px] font-black bg-icyTint text-deepTealDark border border-deepTeal/20">
+                  شام كاش QR
+                </button>
+              </div>
+
+              <!-- Primary Action Row -->
+              <div class="grid grid-cols-2 gap-2 pt-0.5">
+                <button onclick="openVolunteerSheet(${ev.id})" class="organic-btn organic-sm py-2.5 bg-teal-grad text-white text-[11px] font-black shadow-tealGlow">
+                  تطوع الآن
+                </button>
+                <button onclick="openEventDetails(${ev.id})" class="organic-btn organic-sm py-2.5 bg-icyTint border border-deepTeal/25 text-deepTealDark text-[11px] font-black">
+                  التفاصيل
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function toggleMobUpvote(id) {
+      const ev = state.events.find(x => x.id === id);
+      if (!ev) return;
+      ev.upvoted = !ev.upvoted;
+      ev.upvotes += ev.upvoted ? 1 : -1;
+      renderMobHomeFeed();
+      if (ev.upvoted) showMobileToast('تم رفع المنشور ↑', 'teal');
+    }
+
+    function openCommentSheet(id) {
+      const ev = state.events.find(x => x.id === id);
+      if (!ev) return;
+      const items = ev.comments.length
+        ? ev.comments.map(c => `<div class="p-2.5 rounded-2xl bg-canvas border border-softBorder text-[11px]"><strong class="text-indigoDeep block">${c.author}</strong><span class="text-slateMuted">${c.text}</span></div>`).join('')
+        : `<div class="text-[11px] text-slateMuted text-center py-3">لا توجد تعليقات بعد</div>`;
+
+      openUtilSheet(`
+        <div class="space-y-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">تعليق واحد فقط لكل مستخدم + فلتر كلمات ممنوعة</span>
+            <h3 class="font-display text-base font-black text-indigoDeep mt-1">${ev.title}</h3>
+          </div>
+          <div class="space-y-2 max-h-40 overflow-y-auto">${items}</div>
+          ${ev.userCommented
+            ? `<div class="p-2.5 rounded-2xl bg-calmEmerald/15 text-calmEmeraldDark text-[11px] font-black text-center">✓ أضفت تعليقك الوحيد المسموح على هذا المنشور</div>`
+            : `<form onsubmit="saveSingleMobComment(event, ${ev.id})" class="space-y-2">
+                <textarea id="mobReplyTxt" required rows="2" placeholder="اكتب تعليقك... (جرّب كتابة «نصب» أو «كذب» لاختبار الفلتر)" class="w-full p-3 rounded-2xl bg-canvas border border-softBorder focus:border-deepTeal text-xs outline-none"></textarea>
+                <button type="submit" class="organic-btn w-full py-2.5 bg-teal-grad text-white text-xs font-black shadow-tealGlow">حفظ التعليق</button>
+              </form>`
+          }
+        </div>
+      `);
+    }
+
+    function saveSingleMobComment(e, id) {
+      e.preventDefault();
+      const txt = document.getElementById('mobReplyTxt').value.trim();
+      const banned = BANNED_WORDS.find(w => txt.includes(w));
+      if (banned) {
+        showMobileToast(`تم منع الحفظ لوجود كلمة ممنوعة («${banned}»)!`, 'berry');
+        return;
+      }
+      const ev = state.events.find(x => x.id === id);
+      if (!ev) return;
+      ev.comments.push({ author: state.userName, text: txt });
+      ev.userCommented = true;
+      closeSheet('utilSheet');
+      renderMobHomeFeed();
+      showMobileToast('تم حفظ تعليقك بنجاح ✓', 'emerald');
+    }
+
+    function openShamCashSheet(id) {
+      const ev = state.events.find(x => x.id === id) || state.events[0];
+      openUtilSheet(`
+        <div class="text-center space-y-3">
+          <span class="px-3 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">دعم خارجي — شام كاش QR</span>
+          <h3 class="font-display text-base font-black text-indigoDeep">${ev.org}</h3>
+          <div class="p-3 bg-canvas rounded-3xl inline-block border border-softBorder">
+            <svg class="w-28 h-28 text-indigoDeep" viewBox="0 0 29 29" fill="currentColor">
+              <path d="M1 1h7v7H1V1zm1 1v5h5V2H2zm1 1h3v3H3V3zm18-2h7v7h-7V1zm1 1v5h5V2h-5zm1 1h3v3h-3V3zM1 21h7v7H1v-7zm1 1v5h5v-5H2zm1 1h3v3H3v-3z"/>
+              <rect x="10" y="2" width="3" height="3"/><rect x="15" y="4" width="3" height="2"/><rect x="10" y="9" width="5" height="4"/>
+              <rect x="2" y="11" width="5" height="2"/><rect x="18" y="11" width="4" height="3"/><rect x="12" y="16" width="5" height="3"/>
+              <rect x="21" y="17" width="6" height="3"/><rect x="10" y="22" width="4" height="4"/><rect x="18" y="23" width="5" height="4"/>
+            </svg>
+          </div>
+          <div class="p-3 rounded-2xl bg-icyTint text-[11px] font-bold text-indigoDeep leading-relaxed">
+            <strong>المنصة لا تستلم أي مبلغ</strong> — التبرع عبر رابط أو QR خارجي مباشر للجمعية أو عبر الموقع الميداني للتطوع.
+          </div>
+          <button onclick="copySafe('${ev.shamCash}'); closeSheet('utilSheet'); showMobileToast('تم نسخ رابط شام كاش الخارجي ✓', 'teal')" class="organic-btn w-full py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow">
+            نسخ رابط شام كاش الخارجي
+          </button>
+        </div>
+      `);
+    }
+
+    function reportMobPost(id) {
+      showMobileToast('تم إرسال الإبلاغ لإدارة المنصة لفحصه وإخفائه مؤقتاً عند اللزوم', 'berry');
+    }
+
+    /* ============================================================
+       8. SCREEN 4 & 5: EVENT DETAILS & VOLUNTEER SPRING SHEET
+    ============================================================ */
+    function openEventDetails(id) {
+      state.activeEventId = id;
+      goScreen('scr-event');
+    }
+
+    function renderEventDetails() {
+      const ev = state.events.find(x => x.id === state.activeEventId) || state.events[0];
+      const meta = CAT_INFO[ev.cat] || CAT_INFO.environment;
+      const pct = Math.min(100, Math.round((ev.joined / ev.limit) * 100));
+
+      document.getElementById('detArtworkBox').innerHTML = getSceneSVG(ev.scene);
+      const pill = document.getElementById('detCatPill');
+      pill.textContent = meta.label;
+      pill.className = `px-2.5 py-0.5 rounded-full text-[10px] font-black ${meta.pillCls}`;
+
+      document.getElementById('detTitle').textContent = ev.title;
+      document.getElementById('detOrgAvatar').textContent = ev.orgLetter;
+      document.getElementById('detOrgAvatar').className = `w-10 h-10 rounded-2xl ${ev.orgColor} text-white font-display font-black text-lg flex items-center justify-center shrink-0`;
+      document.getElementById('detOrgName').textContent = `${ev.org} ✓`;
+      document.getElementById('detDate').textContent = ev.date;
+      document.getElementById('detLoc').textContent = ev.loc;
+      document.getElementById('detSlots').textContent = `${ev.joined} / ${ev.limit} متطوع (${Math.max(0, ev.limit - ev.joined)} متبقٍ)`;
+      document.getElementById('detSlotsBar').style.width = pct + '%';
+      document.getElementById('detDesc').textContent = ev.desc;
+    }
+
+    function shareActiveEvent() {
+      copySafe(`https://civilhub.org/event/${state.activeEventId}`);
+      showMobileToast('تم نسخ رابط الحدث لمشاركته ✓', 'teal');
+    }
+
+    function openVolunteerSheet(id) {
+      const ev = state.events.find(x => x.id === id) || state.events[0];
+      state.activeEventId = ev.id;
+
+      // Ensure Event Details screen is behind the blurred bottom sheet if triggered from external switcher
+      if (state.currentScreen !== 'scr-event' && state.currentScreen !== 'scr-home') {
+        goScreen('scr-event');
+      } else if (state.currentScreen === 'scr-event') {
+        renderEventDetails();
+      }
+
+      document.getElementById('volSheetEventTitle').textContent = ev.title;
+      document.getElementById('volSheetQ1').textContent = ev.question;
+      document.getElementById('volApplicantName').value = state.userName;
+      openSheet('volunteerSheet');
+
+      // Highlight Screen 5 on desktop external panel
+      document.querySelectorAll('.ext-nav-btn').forEach(btn => {
+        btn.classList.toggle('ext-active', btn.dataset.ext === 'scr-volunteer-sheet');
+      });
+    }
+
+    function submitVolunteerApplication(e) {
+      e.preventDefault();
+      const ev = state.events.find(x => x.id === state.activeEventId) || state.events[0];
+      const name = document.getElementById('volApplicantName').value.trim() || state.userName;
+      const ans1 = document.getElementById('volAns1').value.trim();
+      const ans2 = document.getElementById('volAns2').value;
+
+      state.applicants.unshift({
+        id: Date.now(),
+        name,
+        event: ev.title,
+        cat: ev.cat,
+        answer: `${ans1} — (${ans2})`,
+        status: 'pending',
+        badgeCode: null
+      });
+      if (ev.joined < ev.limit) ev.joined += 1;
+
+      document.getElementById('volAns1').value = '';
+      closeSheet('volunteerSheet');
+      pushNotif(`تم إرسال طلب تطوعك في «${ev.title}» وهو الآن قيد الانتظار في لوحة الجمعية`);
+      syncCounters();
+      renderMobHomeFeed();
+      renderEventDetails();
+      renderCharityAndDirectory();
+      showMobileToast('🎉 تم إرسال طلبك بنجاح! انتقل للوحة الجمعية (7) لقبوله ومنح شارة', 'emerald');
+    }
+
+    /* ============================================================
+       9. SCREEN 6: PROFILE, BADGES & VOLUNTEER CV
+    ============================================================ */
+    function renderProfile() {
+      const list = Object.values(state.badges);
+      document.getElementById('profName').textContent = state.userName;
+      document.getElementById('profStatBadges').textContent = list.length;
+      document.getElementById('profStatDone').textContent = 4 + list.length;
+
+      const wrap = document.getElementById('mobProfileBadges');
+      wrap.innerHTML = list.map(b => `
+        <div class="bg-white rounded-[22px] p-3.5 shadow-cardSoft border border-softBorder flex items-center justify-between gap-2.5">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="relative shrink-0">
+              <div class="w-12 h-12 rounded-full ${b.ringCls} text-white text-xl flex items-center justify-center ring-2 ring-sandyGold/40">${b.icon}</div>
+              <span title="شعار الجمعية" class="w-5 h-5 rounded-full bg-indigoDeep text-white text-[9px] font-black flex items-center justify-center border-2 border-white absolute -bottom-1 -left-1">${b.orgLetter}</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-black text-indigoDeep truncate">${b.title}</div>
+              <div class="text-[10px] font-bold text-deepTealDark truncate">${b.event}</div>
+              <div class="text-[10px] font-extrabold text-slateMuted tracking-wider mt-0.5">${b.code}</div>
+            </div>
+          </div>
+          <button onclick="jumpVerifyCode('${b.code}')" class="organic-btn organic-sm px-3 py-2 bg-icyTint text-deepTealDark text-[10px] font-black shrink-0">
+            تحقق QR
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function openCvPreviewSheet() {
+      const list = Object.values(state.badges);
+      openUtilSheet(`
+        <div id="cvPrintSheet" class="space-y-3">
+          <div class="flex items-center justify-between border-b border-softBorder pb-2.5">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[9px] font-black">السيفي التطوعي الرسمي — مجتمعنا</span>
+              <h3 class="font-display text-base font-black text-indigoDeep mt-1">${state.userName}</h3>
+              <p class="text-[10px] text-slateMuted">54 ساعة تطوع • ${list.length} شارات موثقة</p>
+            </div>
+            <div class="emblem-glow w-9 h-9 rounded-full text-white font-display font-black text-lg flex items-center justify-center">م</div>
+          </div>
+          <div class="space-y-1.5">
+            ${list.map(b => `
+              <div class="p-2.5 rounded-2xl bg-canvas border border-softBorder flex items-center justify-between text-[10px] gap-2">
+                <div class="truncate"><strong>${b.icon} ${b.title}</strong> — ${b.event}</div>
+                <span class="font-black text-deepTealDark shrink-0">${b.code}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="copySafe('https://civilhub.org/cv/sami-ali'); closeSheet('utilSheet'); showMobileToast('تم نسخ رابط السيفي التطوعي ✓', 'teal')" class="organic-btn organic-sm py-2.5 bg-teal-grad text-white text-[11px] font-black shadow-tealGlow">
+              نسخ الرابط
+            </button>
+            <button onclick="window.print()" class="organic-btn organic-sm py-2.5 bg-indigo-grad text-white text-[11px] font-black">
+              طباعة / PDF
+            </button>
+          </div>
+        </div>
+      `);
+    }
+
+    function openAccountVerifySheet() {
+      openUtilSheet(`
+        <div class="space-y-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">من الإعدادات • طلب واحد قيد المراجعة</span>
+            <h3 class="font-display text-base font-black text-indigoDeep mt-1">طلب توثيق الحساب</h3>
+          </div>
+          <form onsubmit="event.preventDefault(); closeSheet('utilSheet'); pushNotif('تم إرسال طلب توثيق حسابك للإدارة'); showMobileToast('تم إرسال الطلب — تُحذف الوثائق تلقائياً بعد القرار ✓', 'emerald')" class="space-y-2.5">
+            <select class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none">
+              <option>جمعية خيرية مرخصة</option>
+              <option>شخص موثوق</option>
+            </select>
+            <input required type="text" placeholder="رقم التواصل وروابط الأعمال الخيرية" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs outline-none" />
+            <div class="p-3 rounded-2xl border-2 border-dashed border-deepTeal/35 bg-icyTint/50 text-center text-[10px] space-y-1">
+              <div class="font-black text-indigoDeep">📎 إرفاق الهوية / الجواز أو الترخيص الرسمي</div>
+              <div class="font-bold text-calmEmeraldDark">🔒 ملاحظة: تُحذف الوثائق نهائياً فور صدور قرار الإدارة</div>
+            </div>
+            <button type="submit" class="organic-btn w-full py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow">إرسال طلب التوثيق</button>
+          </form>
+        </div>
+      `);
+    }
+
+    function openEmergencyRevokeSheet() {
+      const codes = Object.keys(state.badges);
+      openUtilSheet(`
+        <div class="space-y-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-berryTint text-softBerryDark text-[10px] font-black">إجراء طارئ لصاحب المنصة</span>
+            <h3 class="font-display text-base font-black text-indigoDeep mt-1">طلب إلغاء شارة طارئ</h3>
+          </div>
+          <form onsubmit="submitEmergencyRevoke(event)" class="space-y-2.5">
+            <select id="emRevokeCode" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none">
+              ${codes.map(c => `<option value="${c}">${c} — ${state.badges[c].title}</option>`).join('')}
+            </select>
+            <textarea required rows="2" placeholder="اذكر سبب الطلب الطارئ لإلغاء الشارة..." class="w-full p-3 rounded-2xl bg-canvas border border-softBorder text-xs outline-none"></textarea>
+            <button type="submit" class="organic-btn w-full py-3 bg-berry-grad text-white text-xs font-black shadow-berryGlow">إرسال الطلب لصاحب المنصة</button>
+          </form>
+        </div>
+      `);
+    }
+
+    function submitEmergencyRevoke(e) {
+      e.preventDefault();
+      const code = document.getElementById('emRevokeCode').value;
+      closeSheet('utilSheet');
+      pushNotif(`تم رفع طلب إلغاء طارئ للشارة ${code} إلى صاحب المنصة`);
+      showMobileToast(`تم إرسال طلب الإلغاء الطارئ للشارة ${code}`, 'berry');
+    }
+
+    /* ============================================================
+       10. SCREEN 7: CHARITY DASHBOARD, DIRECTORY & TRUSTED QUEUE
+    ============================================================ */
+    function switchCharityTab(tab) {
+      const isDash = tab === 'dash';
+      document.getElementById('chPane-dash').classList.toggle('hidden', !isDash);
+      document.getElementById('chPane-dir').classList.toggle('hidden', isDash);
+      document.getElementById('chTab-dash').className = isDash
+        ? 'organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-sm'
+        : 'organic-btn organic-sm py-2 text-xs font-extrabold text-slateMuted';
+      document.getElementById('chTab-dir').className = !isDash
+        ? 'organic-btn organic-sm flipped py-2 text-xs font-black bg-teal-grad text-white shadow-sm'
+        : 'organic-btn organic-sm py-2 text-xs font-extrabold text-slateMuted';
+    }
+
+    function openCreateEventSheet() {
+      openUtilSheet(`
+        <div class="space-y-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-icyTint text-deepTealDark text-[10px] font-black">لوحة الجمعية الخيرية</span>
+            <h3 class="font-display text-base font-black text-indigoDeep mt-1">إنشاء حدث مجتمعي جديد</h3>
+          </div>
+          <form onsubmit="publishMobNewEvent(event)" class="space-y-2.5">
+            <input id="newEvTitle" required type="text" placeholder="اسم الحدث (مثال: تشجير شارع الكورنيش)" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none focus:border-deepTeal" />
+            <div class="grid grid-cols-2 gap-2">
+              <select id="newEvCat" class="w-full px-3 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none">
+                <option value="environment">جانب بيئي</option>
+                <option value="humanitarian">عمل إنساني مجتمعي</option>
+                <option value="animals">رعاية الحيوانات</option>
+              </select>
+              <input id="newEvLimit" required type="number" min="5" value="20" placeholder="عدد المتطوعين" class="w-full px-3 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none" />
+            </div>
+            <input id="newEvLoc" required type="text" placeholder="الموقع الميداني" value="سلمية — الحي الغربي" class="w-full px-3.5 py-2.5 rounded-2xl bg-canvas border border-softBorder text-xs font-bold outline-none" />
+            <textarea id="newEvDesc" required rows="2" placeholder="شرح موجز للحدث ونتائجه..." class="w-full p-3 rounded-2xl bg-canvas border border-softBorder text-xs outline-none"></textarea>
+            <button type="submit" class="organic-btn w-full py-3 bg-teal-grad text-white text-xs font-black shadow-tealGlow">نشر الحدث فوراً في الرئيسية</button>
+          </form>
+        </div>
+      `);
+    }
+
+    function publishMobNewEvent(e) {
+      e.preventDefault();
+      const title = document.getElementById('newEvTitle').value.trim();
+      const cat = document.getElementById('newEvCat').value;
+      const limit = Number(document.getElementById('newEvLimit').value) || 20;
+      const loc = document.getElementById('newEvLoc').value.trim();
+      const desc = document.getElementById('newEvDesc').value.trim();
+      const sceneMap = { environment: 'trees', humanitarian: 'warmth', animals: 'animals' };
+
+      state.events.unshift({
+        id: Date.now(),
+        title,
+        cat,
+        sub: CAT_INFO[cat].subtopics[0],
+        org: 'جمعية سلمية للبيئة',
+        orgLetter: 'س',
+        orgColor: 'bg-teal-grad',
+        loc,
+        date: 'الجمعة القادمة • 10:00 ص',
+        joined: 1,
+        limit,
+        upvotes: 1,
+        upvoted: false,
+        userCommented: false,
+        comments: [],
+        question: 'هل يمكنك الالتزام بالحضور طوال ساعات المبادرة؟',
+        shamCash: 'shamcash://salamiyah-new-2026',
+        scene: sceneMap[cat] || 'trees',
+        desc
+      });
+
+      closeSheet('utilSheet');
+      pushNotif(`تم نشر حدث جديد «${title}» في الصفحة الرئيسية`);
+      syncCounters();
+      goScreen('scr-home');
+      selectMobCategory('all');
+      showMobileToast(`تم نشر «${title}» مباشرة في الرئيسية ✓`, 'teal');
+    }
+
+    function renderCharityAndDirectory() {
+      // Applicants List
+      const appWrap = document.getElementById('chApplicantsList');
+      appWrap.innerHTML = state.applicants.map(a => {
+        let actions = '';
+        if (a.status === 'pending') {
+          actions = `
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="decideMobApplicant(${a.id}, 'accepted')" class="organic-btn organic-sm py-2 bg-emerald-grad text-white text-[11px] font-black shadow-emeraldGlow">قبول</button>
+              <button onclick="decideMobApplicant(${a.id}, 'rejected')" class="organic-btn organic-sm py-2 bg-berry-grad text-white text-[11px] font-black shadow-berryGlow">رفض</button>
+            </div>`;
+        } else if (a.status === 'accepted' && !a.badgeCode) {
+          actions = `
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <span class="px-2.5 py-1 rounded-full bg-calmEmerald/15 text-calmEmeraldDark text-[10px] font-black">مقبول ✓</span>
+              <button onclick="grantMobBadge(${a.id})" class="organic-btn organic-sm flex-1 py-2 bg-gold-grad text-white text-[11px] font-black shadow-goldGlow">منح شارة بكود فريد</button>
+            </div>`;
+        } else if (a.status === 'accepted' && a.badgeCode) {
+          actions = `
+            <div class="flex items-center gap-1.5 pt-1">
+              <button onclick="jumpVerifyCode('${a.badgeCode}')" class="organic-btn organic-sm flex-1 py-2 bg-teal-grad text-white text-[10px] font-black">تحقق ${a.badgeCode}</button>
+              <button onclick="revokeMobBadge(${a.id})" class="organic-btn organic-sm px-3 py-2 bg-berryTint text-softBerryDark text-[10px] font-black">سحب الشارة</button>
+            </div>`;
+        } else {
+          actions = `<span class="inline-block px-2.5 py-0.5 rounded-full bg-berryTint text-softBerryDark text-[10px] font-black">مرفوض</span>`;
+        }
+
+        return `
+          <div class="p-3 rounded-2xl bg-canvas border border-softBorder space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-black text-indigoDeep">${a.name}</span>
+              <span class="px-2 py-0.5 rounded-full bg-white border border-softBorder text-[9px] font-extrabold text-deepTealDark truncate max-w-[155px]">${a.event}</span>
+            </div>
+            <p class="text-[10px] text-slateMuted leading-relaxed">«${a.answer}»</p>
+            ${actions}
+          </div>
+        `;
+      }).join('');
+
+      // Directory List
+      document.getElementById('mobDirectoryList').innerHTML = state.directory.map(d => `
+        <div class="bg-white rounded-[22px] p-3.5 shadow-cardSoft border border-softBorder flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl ${d.color} text-white font-display font-black text-base flex items-center justify-center shrink-0">${d.letter}</div>
+            <div class="min-w-0">
+              <div class="text-xs font-black text-indigoDeep truncate">${d.name} ✓</div>
+              <div class="text-[10px] font-bold text-deepTealDark">${d.role} • ${d.mou}</div>
+              <div class="text-[9px] font-bold text-slateMuted">${d.followers} متابع</div>
+            </div>
+          </div>
+          <button onclick="toggleMobFollow(${d.id})" class="organic-btn organic-sm px-3 py-1.5 text-[10px] font-black shrink-0 ${d.following ? 'bg-teal-grad text-white shadow-sm' : 'bg-canvas border border-softBorder text-indigoDeep'}">
+            ${d.following ? 'متابَع ✓' : 'متابعة'}
+          </button>
+        </div>
+      `).join('');
+
+      // Trusted Review Queue
+      const qWrap = document.getElementById('mobTrustedQueueList');
+      qWrap.innerHTML = state.trustedQueue.length ? state.trustedQueue.map(p => `
+        <div class="p-3 rounded-2xl bg-canvas border border-softBorder space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <strong class="text-xs text-indigoDeep">${p.title}</strong>
+            <span class="text-[9px] font-extrabold text-softIrisDark shrink-0">${p.author}</span>
+          </div>
+          <p class="text-[10px] text-slateMuted leading-relaxed">${p.desc}</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="reviewMobTrustedPost(${p.id}, true)" class="organic-btn organic-sm py-1.5 bg-emerald-grad text-white text-[10px] font-black">موافقة ونشر</button>
+            <button onclick="reviewMobTrustedPost(${p.id}, false)" class="organic-btn organic-sm py-1.5 bg-berry-grad text-white text-[10px] font-black">رفض</button>
+          </div>
+        </div>
+      `).join('') : `<div class="p-4 rounded-2xl bg-icyTint text-deepTealDark text-[11px] font-black text-center">✓ لا توجد منشورات معلقة بالمراجعة</div>`;
+    }
+
+    function decideMobApplicant(id, status) {
+      const a = state.applicants.find(x => x.id === id);
+      if (!a) return;
+      a.status = status;
+      syncCounters();
+      renderCharityAndDirectory();
+      showMobileToast(status === 'accepted' ? `تم قبول ${a.name}! يمكنك الآن منح الشارة` : `تم رفض طلب ${a.name}`, status === 'accepted' ? 'emerald' : 'berry');
+    }
+
+    function grantMobBadge(id) {
+      const a = state.applicants.find(x => x.id === id);
+      if (!a) return;
+      const suffix = (CAT_INFO[a.cat] || CAT_INFO.environment).suffix;
+      const code = `CSH-${Math.floor(1000 + Math.random() * 8999)}-${suffix}`;
+      a.badgeCode = code;
+
+      const iconMap = { environment: '🌿', humanitarian: '♥', animals: '🐾' };
+      const ringMap = {
+        environment: 'bg-emerald-grad shadow-emeraldGlow',
+        humanitarian: 'bg-berry-grad shadow-berryGlow',
+        animals: 'bg-iris-grad shadow-irisGlow'
+      };
+
+      state.badges[code] = {
+        code,
+        title: 'وسام الأثر الميداني',
+        event: a.event,
+        org: 'جمعية سلمية للبيئة',
+        orgLetter: 'س',
+        volunteer: a.name,
+        cat: a.cat || 'environment',
+        icon: iconMap[a.cat] || '🏅',
+        ringCls: ringMap[a.cat] || 'bg-teal-grad shadow-tealGlow',
+        date: '19 نوفمبر 2026'
+      };
+
+      pushNotif(`تم منح شارة بكود ${code} للمتطوع ${a.name} وتفعيلها في التحقق العام`);
+      syncCounters();
+      renderCharityAndDirectory();
+      renderProfile();
+      renderVerifyChips();
+      showMobileToast(`🏅 تم منح شارة ${code} وإضافتها للسيفي والتحقق QR ✓`, 'teal');
+    }
+
+    function revokeMobBadge(id) {
+      const a = state.applicants.find(x => x.id === id);
+      if (!a || !a.badgeCode) return;
+      const old = a.badgeCode;
+      delete state.badges[old];
+      a.badgeCode = null;
+      syncCounters();
+      renderCharityAndDirectory();
+      renderProfile();
+      renderVerifyChips();
+      showMobileToast(`تم سحب الشارة ${old} وإلغاؤها من التحقق العام`, 'berry');
+    }
+
+    function toggleMobFollow(id) {
+      const d = state.directory.find(x => x.id === id);
+      if (!d) return;
+      d.following = !d.following;
+      d.followers += d.following ? 1 : -1;
+      renderCharityAndDirectory();
+      showMobileToast(d.following ? `تمت متابعة ${d.name} ✓` : `تم إلغاء متابعة ${d.name}`, 'teal');
+    }
+
+    function reviewMobTrustedPost(id, approve) {
+      const p = state.trustedQueue.find(x => x.id === id);
+      if (!p) return;
+      state.trustedQueue = state.trustedQueue.filter(x => x.id !== id);
+      if (approve) {
+        state.events.unshift({
+          id: Date.now(),
+          title: p.title,
+          cat: p.cat,
+          sub: CAT_INFO[p.cat].subtopics[0],
+          org: `معتمد من شخص موثوق • ${p.author}`,
+          orgLetter: 'م',
+          orgColor: 'bg-teal-grad',
+          loc: 'سلمية — مجتمعي',
+          date: 'نُشر الآن',
+          joined: 1,
+          limit: 15,
+          upvotes: 1,
+          upvoted: false,
+          userCommented: false,
+          comments: [],
+          question: 'كيف تود المساهمة في هذه المبادرة؟',
+          shamCash: 'shamcash://trusted-approved-2026',
+          scene: p.scene || 'warmth',
+          desc: p.desc
+        });
+        pushNotif(`وافق الشخص الموثوق على نشر «${p.title}» في الرئيسية`);
+      }
+      syncCounters();
+      renderMobHomeFeed();
+      renderCharityAndDirectory();
+      showMobileToast(approve ? 'تمت الموافقة ونشر المبادرة في الرئيسية ✓' : 'تم رفض المنشور', approve ? 'emerald' : 'berry');
+    }
+
+    /* ============================================================
+       11. SCREEN 8: PUBLIC QR VERIFICATION & LASER SIMULATOR
+    ============================================================ */
+    function renderVerifyChips() {
+      const codes = Object.keys(state.badges);
+      document.getElementById('mobVerifyChips').innerHTML =
+        codes.map(c => `<button onclick="setAndVerifyMob('${c}')" class="organic-btn organic-sm px-2.5 py-1 text-[10px] font-black bg-icyTint border border-deepTeal/25 text-deepTealDark">${c}</button>`).join('') +
+        `<button onclick="setAndVerifyMob('CSH-0000-ERR')" class="organic-btn organic-sm px-2.5 py-1 text-[10px] font-bold bg-berryTint text-softBerryDark">كود ملغى</button>`;
+    }
+
+    function jumpVerifyCode(code) {
+      goScreen('scr-verify');
+      setAndVerifyMob(code);
+    }
+
+    function setAndVerifyMob(code) {
+      document.getElementById('mobVerifyInput').value = code;
+      runMobVerify();
+    }
+
+    function runQrLaserSim() {
+      const sim = document.getElementById('mobQrSimBox');
+      sim.classList.remove('hidden');
+      const codes = Object.keys(state.badges);
+      const pick = codes[codes.length - 1] || 'CSH-8299-ENV';
+      showMobileToast('جارٍ مسح رمز QR...', 'teal');
+      setTimeout(() => {
+        sim.classList.add('hidden');
+        setAndVerifyMob(pick);
+        showMobileToast(`تمت القراءة والتحقق من الكود ${pick} ✓`, 'emerald');
+      }, 1450);
+    }
+
+    function runMobVerify() {
+      const code = document.getElementById('mobVerifyInput').value.trim().toUpperCase();
+      const b = state.badges[code];
+      const card = document.getElementById('mobVerifyCard');
+      card.style.animation = 'none';
+      void card.offsetWidth;
+      card.style.animation = 'screenSpringPop 0.44s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+
+      if (b) {
+        document.getElementById('mvAura').className = 'absolute top-4 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full bg-calmEmerald/15 blur-3xl pointer-events-none';
+        document.getElementById('mvStatusPill').className = 'inline-block px-3.5 py-1 rounded-full bg-calmEmerald/15 text-calmEmeraldDark text-[11px] font-black';
+        document.getElementById('mvStatusPill').textContent = 'مشارك مؤكد ✓';
+        document.getElementById('mvTitle').textContent = 'تم التحقق من المشاركة';
+        document.getElementById('mvCode').textContent = b.code;
+        document.getElementById('mvBadgeCircle').className = `w-28 h-28 rounded-full ${b.ringCls} p-2 flex items-center justify-center ring-4 ring-sandyGold/35`;
+        document.getElementById('mvBadgeIcon').textContent = b.icon;
+        document.getElementById('mvBadgeName').textContent = b.title;
+        document.getElementById('mvEvent').textContent = b.event;
+        document.getElementById('mvOrg').textContent = `الجمعية المانحة: ${b.org}`;
+        document.getElementById('mvVolunteer').textContent = `المتطوع: ${b.volunteer} • ${b.date}`;
+        document.getElementById('mvSeal').className = 'verify-seal-pulse w-12 h-12 rounded-full bg-emerald-grad text-white flex items-center justify-center shadow-md';
+        document.getElementById('mvSeal').innerHTML = `<svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+      } else {
+        document.getElementById('mvAura').className = 'absolute top-4 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full bg-softBerry/15 blur-3xl pointer-events-none';
+        document.getElementById('mvStatusPill').className = 'inline-block px-3.5 py-1 rounded-full bg-berryTint text-softBerryDark text-[11px] font-black';
+        document.getElementById('mvStatusPill').textContent = 'غير موجود أو ملغى ✕';
+        document.getElementById('mvTitle').textContent = 'لم يتم العثور على الشارة';
+        document.getElementById('mvCode').textContent = code || '—';
+        document.getElementById('mvBadgeCircle').className = 'w-28 h-28 rounded-full bg-berry-grad shadow-berryGlow p-2 flex items-center justify-center';
+        document.getElementById('mvBadgeIcon').textContent = '✕';
+        document.getElementById('mvBadgeName').textContent = 'غير مسجل';
+        document.getElementById('mvEvent').textContent = 'كود شارة غير صالح أو تم سحبه';
+        document.getElementById('mvOrg').textContent = 'تأكد من كتابة الكود الصحيح أو مسح QR';
+        document.getElementById('mvVolunteer').textContent = 'الحالة: غير مشارك';
+        document.getElementById('mvSeal').className = 'w-12 h-12 rounded-full bg-berry-grad text-white flex items-center justify-center shadow-md';
+        document.getElementById('mvSeal').innerHTML = `<svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
+      }
+    }
+
+    /* ============================================================
+       12. NOTIFICATIONS, QUICK SWITCHER (MOBILE), TOASTS & COPY
+    ============================================================ */
+    function pushNotif(text) {
+      state.notifications.unshift({ id: Date.now(), text, time: 'الآن', unread: true });
+      syncCounters();
+    }
+
+    function openNotificationsSheet() {
+      state.notifications.forEach(n => n.unread = false);
+      syncCounters();
+      openUtilSheet(`
+        <div class="space-y-2.5">
+          <h3 class="font-display text-base font-black text-indigoDeep">الإشعارات الحية</h3>
+          <div class="space-y-2">
+            ${state.notifications.map(n => `
+              <div class="p-3 rounded-2xl bg-canvas border border-softBorder text-[11px] space-y-0.5">
+                <div class="font-bold text-indigoDeep leading-relaxed">${n.text}</div>
+                <div class="text-[9px] font-bold text-slateMuted">${n.time}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `);
+    }
+
+    function openQuickSwitcherSheet() {
+      openUtilSheet(`
+        <div class="space-y-2">
+          <h3 class="font-display text-base font-black text-indigoDeep mb-2">التنقل السريع (8 شاشات)</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="goScreen('scr-welcome')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">1. الترحيب و OTP</button>
+            <button onclick="goScreen('scr-wizard')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">2. معالج الاهتمامات</button>
+            <button onclick="goScreen('scr-home')" class="organic-btn organic-sm p-2.5 bg-teal-grad text-white text-[11px] font-black">3. الرئيسية</button>
+            <button onclick="goScreen('scr-event')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">4. تفاصيل الحدث</button>
+            <button onclick="closeSheet('utilSheet'); openVolunteerSheet(state.activeEventId)" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">5. أجب لتتطوع</button>
+            <button onclick="goScreen('scr-profile')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">6. السيفي والشارات</button>
+            <button onclick="goScreen('scr-charity')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">7. الجمعية والدليل</button>
+            <button onclick="goScreen('scr-verify')" class="organic-btn organic-sm p-2.5 bg-canvas text-indigoDeep text-[11px] font-black">8. التحقق QR</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function showMobileToast(msg, tone = 'teal') {
+      const stack = document.getElementById('phoneToastStack');
+      const cls = {
+        teal:    'bg-teal-grad text-white shadow-tealGlow',
+        emerald: 'bg-emerald-grad text-white shadow-emeraldGlow',
+        berry:   'bg-berry-grad text-white shadow-berryGlow',
+        indigo:  'bg-indigo-grad text-white shadow-lg'
+      };
+      const el = document.createElement('div');
+      el.className = `mobile-toast pointer-events-auto px-3.5 py-2.5 rounded-2xl text-[11px] font-extrabold flex items-center gap-2 ${cls[tone] || cls.teal}`;
+      el.innerHTML = `<span class="w-2 h-2 rounded-full bg-white shrink-0"></span><span class="leading-snug">${msg}</span>`;
+      stack.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        el.style.transition = 'all 0.28s ease';
+        setTimeout(() => el.remove(), 300);
+      }, 3100);
+    }
+
+    function copySafe(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+
+    // Close sheets on tapping backdrop
+    ['volunteerSheet', 'otpSheet', 'utilSheet'].forEach(id => {
+      document.getElementById(id).addEventListener('click', function (e) {
+        if (e.target.id === id) closeSheet(id);
+      });
+    });
+
+    /* ============================================================
+       13. BOOTSTRAP APP
+    ============================================================ */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMobSubtopics();
+      renderMobHomeFeed();
+      renderEventDetails();
+      renderProfile();
+      renderCharityAndDirectory();
+      renderVerifyChips();
+      runMobVerify();
+      syncCounters();
+    });
+  </script>
+</body>
+</html>

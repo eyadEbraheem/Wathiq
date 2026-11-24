@@ -4,4 +4,5 @@
 export * from './api';
 export * from './enums';
 export * from './labels';
+export * from './theme';
 export * from './models';
