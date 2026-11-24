@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { HealthController } from 'src/health/health.controller';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { StorageModule } from 'src/storage/storage.module';
 
@@ -21,6 +22,7 @@ import { StorageModule } from 'src/storage/storage.module';
     // Background jobs (overdue event documentation, push notifications).
     ScheduleModule.forRoot(),
     PrismaModule,
+    NotificationsModule,
     StorageModule,
   ],
   controllers: [HealthController],
