@@ -11,6 +11,7 @@ import { OrganizersModule } from 'src/organizers/organizers.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PushModule } from 'src/push/push.module';
 import { RatingsModule } from 'src/ratings/ratings.module';
+import { SearchModule } from 'src/search/search.module';
 import { SectionsModule } from 'src/sections/sections.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { UsersModule } from 'src/users/users.module';
@@ -39,6 +40,7 @@ import { VerificationRequestsModule } from 'src/verification-requests/verificati
     VerificationRequestsModule,
     RatingsModule,
     OrganizersModule,
+    SearchModule,
     PushModule,
   ],
   controllers: [HealthController],
