@@ -165,7 +165,7 @@ npm run start:dev                # http://localhost:3000/api/v1
 ```
 
 **البيانات التجريبية الكاملة:** ملف `backend/.env.example` يفعّل `SEED_DEMO` و `SEED_SHOWCASE` افتراضياً، فيكفي وضع
-`DEMO_PASSWORD` (كلمة السر في [الحسابات التجريبية](#الحسابات-التجريبية)) قبل `npm run db:seed`. ينشئ ذلك 20 جمعية و5 أفراد
+`DEMO_PASSWORD=Wathiq2026!` (كلمة سر [الحسابات التجريبية](#الحسابات-التجريبية)) قبل `npm run db:seed`. ينشئ ذلك 20 جمعية و5 أفراد
 موثّقين و260 متطوعاً وحوالي 150 حملة بصورها مع طلبات التطوع والشارات والتقييمات وأرقام الأثر، فتظهر الإحصائيات
 ولوحة الإدارة ممتلئة. أول تشغيل يحتاج إنترنت لتنزيل حوالي 100 صورة.
 
@@ -246,18 +246,18 @@ npx expo start                   # امسح رمز QR بتطبيق Expo Go، أ�
 
 ## الحسابات التجريبية
 
-تُنشأ تلقائياً بسكربت الـ seed (`DEMO_PASSWORD` في `backend/.env`، ثم `npm run db:seed` من `backend/`).
+تُنشأ تلقائياً بسكربت الـ seed: ضع `DEMO_PASSWORD=Wathiq2026!` في `backend/.env` ثم شغّل `npm run db:seed` من `backend/`.
 كلها تشترك بنفس كلمة السر.
 
 | الحساب | البريد | كلمة السر |
 |---|---|---|
-| مدير المنصة | `demo-admin@wathiq.local` | تُضاف قريباً |
-| جمعية موثّقة | `demo-hope@wathiq.local` | تُضاف قريباً |
-| فريق موثّق | `demo-green@wathiq.local` | تُضاف قريباً |
-| متطوع | `demo-volunteer@wathiq.local` | تُضاف قريباً |
-| جمعية بإحصائيات كاملة | `showcase-org-01@wathiq.local` … `showcase-org-20@wathiq.local` | تُضاف قريباً |
-| فرد موثّق | `showcase-ind-1@wathiq.local` … `showcase-ind-5@wathiq.local` | تُضاف قريباً |
-| متطوع بسيرة وشارات | `showcase-v001@wathiq.local` … `showcase-v260@wathiq.local` | تُضاف قريباً |
+| مدير المنصة | `demo-admin@wathiq.local` | `Wathiq2026!` |
+| جمعية موثّقة | `demo-hope@wathiq.local` | `Wathiq2026!` |
+| فريق موثّق | `demo-green@wathiq.local` | `Wathiq2026!` |
+| متطوع | `demo-volunteer@wathiq.local` | `Wathiq2026!` |
+| جمعية بإحصائيات كاملة | `showcase-org-01@wathiq.local` … `showcase-org-20@wathiq.local` | `Wathiq2026!` |
+| فرد موثّق | `showcase-ind-1@wathiq.local` … `showcase-ind-5@wathiq.local` | `Wathiq2026!` |
+| متطوع بسيرة وشارات | `showcase-v001@wathiq.local` … `showcase-v260@wathiq.local` | `Wathiq2026!` |
 
 ## رابط العرض وتطبيق الموبايل
 
