@@ -1,4 +1,4 @@
-// Mirrors the enums in api/prisma/schema.prisma. Keep in sync when the schema changes.
+// Mirrors the enums in backend/prisma/schema.prisma. Keep in sync when the schema changes.
 
 export const UserRole = {
   USER: 'USER',

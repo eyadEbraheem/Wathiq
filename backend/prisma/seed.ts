@@ -3,7 +3,7 @@
 // With SEED_DEMO=true it also adds demo accounts and content (prisma/demo-data.ts), and with
 // SEED_SHOWCASE=true a large made-up platform with photos for local demos (prisma/showcase/).
 //
-//   npm run db:seed -w api   (or: npx prisma db seed, from api/)
+//   npm run db:seed -w api   (or: npx prisma db seed, from backend/)
 
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +13,7 @@ import { normalizeArabic } from '../src/common/utils/arabic';
 import { seedDemo } from './demo-data';
 import { seedShowcase } from './showcase';
 
-// Read api/.env ourselves: the Prisma Client only finds it on its own when it was generated
+// Read backend/.env ourselves: the Prisma Client only finds it on its own when it was generated
 // after .env existed, which is not the case on a fresh clone. Values already set win.
 const envFile = join(__dirname, '..', '.env');
 if (existsSync(envFile)) process.loadEnvFile(envFile);

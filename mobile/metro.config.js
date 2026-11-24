@@ -12,9 +12,9 @@ function escapedPath(directory) {
 // Ignoring generated output prevents ENOENT watcher crashes when API and web run
 // alongside the Expo development server.
 const generatedDirectories = [
-  path.join(repositoryRoot, 'api', 'dist'),
-  path.join(repositoryRoot, 'web', '.next'),
-  path.join(repositoryRoot, 'web', 'out'),
+  path.join(repositoryRoot, 'backend', 'dist'),
+  path.join(repositoryRoot, 'frontend', '.next'),
+  path.join(repositoryRoot, 'frontend', 'out'),
   path.join(__dirname, 'dist'),
 ];
 

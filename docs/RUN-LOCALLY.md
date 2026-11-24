@@ -42,11 +42,11 @@ psql -U postgres -c "CREATE DATABASE civil_society_hub;"
 ## 4. ملفات الإعدادات (قبل `npm install`)
 
 ```powershell
-Copy-Item api/.env.example api/.env
-Copy-Item web/.env.example web/.env.local
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env.local
 ```
 
-افتح `api/.env` وعبّي:
+افتح `backend/.env` وعبّي:
 
 | المتغيّر | شو تحط |
 |---|---|
@@ -62,7 +62,7 @@ Copy-Item web/.env.example web/.env.local
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
-خلّي الباقي متل ما هو. `web/.env.local` ما بدو تعديل، إلا إذا بدك تمسح رمز QR السيرة من موبايلك:
+خلّي الباقي متل ما هو. `frontend/.env.local` ما بدو تعديل، إلا إذا بدك تمسح رمز QR السيرة من موبايلك:
 وقتها حط بـ `PUBLIC_WEB_URL` الـ IP تبع جهازك (متل `http://192.168.1.20:3001`، شوف الخطوة 10).
 **ملفات `.env` ما بتنرفع على git أبداً**، وكل واحد عنده نسخته.
 
@@ -81,7 +81,7 @@ npm install
 ## 6. تجهيز الجداول والبيانات الأولى
 
 ```powershell
-cd api
+cd backend
 npx prisma migrate deploy
 npm run db:seed
 cd ..
@@ -90,10 +90,10 @@ cd ..
 الـ seed بيعمل الأقسام الخمسة ومواضيعها، والكلمات الممنوعة، وحساب واثق الرسمي، وحساب الأدمن.
 آخر سطر لازم يكون `Seed done: 5 sections, ...`.
 
-**بيانات تجريبية (منصح فيها لتشوف الموقع مليان):** بعد ما تحط `DEMO_PASSWORD` بـ `api/.env`:
+**بيانات تجريبية (منصح فيها لتشوف الموقع مليان):** بعد ما تحط `DEMO_PASSWORD` بـ `backend/.env`:
 
 ```powershell
-cd api
+cd backend
 $env:SEED_DEMO='true'; npm run db:seed; Remove-Item Env:SEED_DEMO
 cd ..
 ```
@@ -105,7 +105,7 @@ cd ..
 **منصة كاملة للعرض (showcase):** إذا بدك الموقع يبين كأنو صرلو سنة ونص شغّال، مع صور حملات:
 
 ```powershell
-cd api
+cd backend
 $env:SEED_SHOWCASE='true'; npm run db:seed; Remove-Item Env:SEED_SHOWCASE
 cd ..
 ```
@@ -118,11 +118,11 @@ cd ..
 - الحسابات: `showcase-org-01@wathiq.local` لـ `-20`، و`showcase-ind-1` لـ `-5`، و`showcase-v001` لـ
   `-v260`، كلها بكلمة السر `DEMO_PASSWORD`.
 - **بدها إنترنت أول مرة:** بتنزّل حوالي 100 صورة مجانية من Unsplash (رخصة Unsplash، استعمال حر)
-  لـ `api/prisma/.showcase-images/` (حوالي 14MB، مش بـ git). وبعدين بتنسخ صورة لكل منشور بـ
-  `api/storage/` (حوالي 80MB).
+  لـ `backend/prisma/.showcase-images/` (حوالي 14MB، مش بـ git). وبعدين بتنسخ صورة لكل منشور بـ
+  `backend/storage/` (حوالي 80MB).
 - الأرقام عشوائية بس **ثابتة** (نفس البذرة كل مرة)، والتواريخ محسوبة من يوم التشغيل. بتشتغل مرة وحدة:
   إذا الحسابات موجودة بتنتجاهل. لترجع تعملها من جديد لازم تمسح الداتابيز (`npx prisma migrate reset`
-  من `api/`، **وهاد بيمسح كل شي**).
+  من `backend/`، **وهاد بيمسح كل شي**).
 - للعرض المحلي بس، ما بتنعمل على السيرفر الحقيقي.
 
 ## 7. التشغيل
@@ -139,7 +139,7 @@ npm run dev:web
 
 - الموقع: **http://localhost:3001**
 - الـ API: `http://localhost:3000/api/v1` (جرّب `http://localhost:3000/api/v1/health`)
-- توثيق الـ API (Swagger): `http://localhost:3000/docs`
+- توثيق الـ API (Swagger): `http://localhost:3000/api/docs`
 
 لازم الاتنين يضلوا شغالين. أول فتحة لكل صفحة بوضع التطوير بطيئة شوي (عم تنبنى)، وبعدها بتصير أسرع.
 
@@ -172,15 +172,15 @@ npm run start -w web
 | شو بيطلع | السبب والحل |
 |---|---|
 | `Module '"@prisma/client"' has no exported member ...` أو أخطاء كتير بـ `nest build` | كود قاعدة البيانات ما انولّد. من مجلد المشروع: `npm run prisma:generate -w api` |
-| `Environment variable not found: DATABASE_URL` | ملف `api/.env` مو موجود أو اسمه غلط (لازم يكون `.env` بالزبط، مو `.env.txt`). تأكد بـ `Get-ChildItem api -Force` |
+| `Environment variable not found: DATABASE_URL` | ملف `backend/.env` مو موجود أو اسمه غلط (لازم يكون `.env` بالزبط، مو `.env.txt`). تأكد بـ `Get-ChildItem backend -Force` |
 | `P1000: Authentication failed` | كلمة سر postgres غلط بـ `DATABASE_URL` |
 | `P1001: Can't reach database server` | PostgreSQL مو شغّال. افتح Services بالويندوز وشغّل `postgresql-x64-18` |
 | `P1003: Database ... does not exist` | ما عملت الخطوة 3 |
 | `Cannot find module '@csh/shared'` | `npm run build:shared` |
 | `EADDRINUSE: address already in use :::3000` (أو 3001) | في نسخة تانية شغّالة. سكّر النوافذ القديمة، أو: `Get-NetTCPConnection -LocalPort 3000 \| % { Stop-Process -Id $_.OwningProcess }` |
-| الموقع بيفتح بس كل شي فاضي أو بيرجعك عالدخول | الـ API مو شغّال، أو `web/.env.local` ناقص |
+| الموقع بيفتح بس كل شي فاضي أو بيرجعك عالدخول | الـ API مو شغّال، أو `frontend/.env.local` ناقص |
 | `npm install` فشل بنص الطريق | احذف `node_modules` وجرّب مرة تانية: `Remove-Item -Recurse -Force node_modules; npm install` |
-| بعد `git pull` صار في أخطاء | ممكن في جداول جديدة: `npm install`، وبعدين من `api/`: `npx prisma migrate deploy` |
+| بعد `git pull` صار في أخطاء | ممكن في جداول جديدة: `npm install`، وبعدين من `backend/`: `npx prisma migrate deploy` |
 
 إذا ضلت المشكلة، ابعت **صورة للنافذة يلي فيها الخطأ** (كامل الخطأ، مو بس آخر سطر).
 
@@ -188,7 +188,7 @@ npm run start -w web
 
 ## 10. لمطوّر الموبايل
 
-كل الـ endpoints موثّقة بـ Swagger على `/docs`. والتصميم بـ `docs/design/reference-mobile.html`.
+كل الـ endpoints موثّقة بـ Swagger على `/api/docs`. والتصميم بـ `docs/design/reference-mobile.html`.
 
 ### الوصول من الموبايل
 
@@ -198,7 +198,7 @@ npm run start -w web
 1. الموبايل والكمبيوتر **على نفس الـ Wi-Fi**.
 2. اعرف الـ IP بـ `ipconfig`، وخود `IPv4 Address` تبع الـ Wi-Fi (متل `192.168.1.20`).
 3. بالتطبيق: `http://192.168.1.20:3000/api/v1`.
-4. حطّ نفس العنوان بـ `API_PUBLIC_URL` بـ `api/.env` (بدون `/api/v1`) وأعِد تشغيل الـ API. هيك روابط
+4. حطّ نفس العنوان بـ `API_PUBLIC_URL` بـ `backend/.env` (بدون `/api/v1`) وأعِد تشغيل الـ API. هيك روابط
    الصور بتفتح من الموبايل.
 5. إذا ما وصل، غالباً جدار الحماية تبع ويندوز. اسمحله بالبورت 3000 على الشبكات الخاصة (PowerShell
    كمدير):
@@ -228,11 +228,11 @@ New-NetFirewallRule -DisplayName "Wathiq API 3000" -Direction Inbound -Protocol 
 - **الأنواع والقيم الثابتة** (الأقسام، الحالات، المحافظات...) موجودة بـ `packages/shared`، مع أسمائها
   بالعربي بـ `labels.ts`.
 - **إشعارات الموبايل:** بعد الدخول ابعت رمز Expo بـ `POST /push-devices`، وعند الخروج
-  `DELETE /push-devices/<الرمز>`. ليوصل إشعار حقيقي لازم `PUSH_ENABLED=true` بـ `api/.env`. كل إشعار
+  `DELETE /push-devices/<الرمز>`. ليوصل إشعار حقيقي لازم `PUSH_ENABLED=true` بـ `backend/.env`. كل إشعار
   فيه `data.postId` لتفتح الصفحة الصح.
 
 ## 11. (اختياري) الاختبارات
 
-بدها قاعدة بيانات تانية اسمها بينتهي بـ `_test` (متل `civil_society_hub_test`)، وملف `api/.env.test`
-بنفس متغيّرات `.env` بس مع رابطها و `NODE_ENV=test`. بعدين من `api/`:
+بدها قاعدة بيانات تانية اسمها بينتهي بـ `_test` (متل `civil_society_hub_test`)، وملف `backend/.env.test`
+بنفس متغيّرات `.env` بس مع رابطها و `NODE_ENV=test`. بعدين من `backend/`:
 `DATABASE_URL=<رابطها> npx prisma migrate deploy`، ومن مجلد المشروع: `npm run test:e2e -w api`.

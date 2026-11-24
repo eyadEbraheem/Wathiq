@@ -6,6 +6,6 @@ config({ path: '.env.test', override: true });
 
 if (!process.env.DATABASE_URL?.includes('_test')) {
   throw new Error(
-    'e2e tests must run against a database whose name ends in _test (see api/.env.test).',
+    'e2e tests must run against a database whose name ends in _test (see backend/.env.test).',
   );
 }

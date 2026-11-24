@@ -14,12 +14,12 @@ or convention) is agreed by the team first, and is then documented in
 - The product is a website first, followed by a **mobile app built with React Native (Expo)**
   that uses the same backend. Every decision must keep the backend client-agnostic.
 - Independent apps in one repo:
-  - `api/`: NestJS
-  - `web/`: Next.js App Router
+  - `backend/`: NestJS
+  - `frontend/`: Next.js App Router
   - `mobile/`: React Native, added later
   - `packages/shared/`: shared TypeScript types and constants used by web and mobile
-- `api/` owns business rules, validation, auth, permissions and data access.
-- `web/` and `mobile/` own UI and interaction only. They never talk to the database directly.
+- `backend/` owns business rules, validation, auth, permissions and data access.
+- `frontend/` and `mobile/` own UI and interaction only. They never talk to the database directly.
 - Secrets live in `.env` (git-ignored). Every variable is listed in `.env.example`.
 
 ### Mobile-ready backend rules
@@ -55,7 +55,7 @@ These apply from day one so the mobile app needs no backend rewrite:
 
 ---
 
-## Backend (`api/`, NestJS + Prisma + PostgreSQL)
+## Backend (`backend/`, NestJS + Prisma + PostgreSQL)
 
 ### Structure
 
@@ -86,7 +86,7 @@ src/
 - `AllExceptionsFilter` globally: `HttpException` passes through, anything else is logged and
   returned as a generic 500 (no internals leaked).
 - CORS limited to `FRONTEND_URL`, `credentials: true`.
-- Swagger at `/docs` with `addBearerAuth()`.
+- Swagger at `/api/docs` with `addBearerAuth()`.
 - `ConfigModule.forRoot({ isGlobal: true })`; read secrets with `config.getOrThrow()`.
 
 ### Controllers
@@ -167,7 +167,7 @@ Use Nest's built-in exceptions with a human-readable message:
 
 ---
 
-## Frontend (`web/`, Next.js App Router + TypeScript + Tailwind)
+## Frontend (`frontend/`, Next.js App Router + TypeScript + Tailwind)
 
 ### Structure
 
@@ -241,7 +241,7 @@ match the app.
 
 ## Domain rules (product decisions)
 
-The schema lives in `api/prisma/schema.prisma`. These rules are enforced in services, inside
+The schema lives in `backend/prisma/schema.prisma`. These rules are enforced in services, inside
 transactions where they span several writes.
 
 ### Accounts
