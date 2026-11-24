@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+coverage/
+
+# env files: secrets stay local, examples are committed
+.env
+.env.*
+!.env.example
+
+
+# misc
+.DS_Store
+*.log
+*.pem
+
+# Uploaded files in development
+api/storage/
+api/storage-test/
+
+# Showcase seed photos, downloaded once from Unsplash (prisma/showcase/photos.ts)
+api/prisma/.showcase-images/

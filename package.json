@@ -1,0 +1,26 @@
+{
+  "name": "wathiq",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "api",
+    "web",
+    "mobile"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build:shared": "npm run build -w @csh/shared",
+    "build": "npm run build:shared && npm run build -w api && npm run build -w web",
+    "dev:api": "npm run start:dev -w api",
+    "dev:web": "npm run dev -w web",
+    "dev:mobile": "npm run start -w mobile",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write .",
+    "postinstall": "npm run build:shared && npm run prisma:generate -w api"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}
