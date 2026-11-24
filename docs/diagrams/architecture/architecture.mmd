@@ -1,0 +1,12 @@
+flowchart LR
+U[Web User] --> W[Next.js 15]
+M[Mobile User] --> R[Expo React Native]
+W --> A[NestJS REST API]
+R --> A
+A --> D[(PostgreSQL via Prisma)]
+A --> F[Local File Storage]
+A --> E[SMTP Email]
+A --> P[Expo Push]
+S[packages/shared] -. shared contracts .-> W
+S -. shared contracts .-> R
+S -. shared contracts .-> A

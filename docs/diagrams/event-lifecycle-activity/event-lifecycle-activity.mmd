@@ -1,0 +1,12 @@
+flowchart TD
+S([Start]) --> A[Create Event]
+A --> B[Define Roles and Capacity]
+B --> C[Publish]
+C --> D[Receive Applications]
+D --> E{Capacity Full?}
+E -- No --> D
+E -- Yes --> F[Close Full Role]
+F --> G[Manage Participants]
+G --> H[Complete Event]
+H --> I[Record Impact and Ratings]
+I --> Z([End])

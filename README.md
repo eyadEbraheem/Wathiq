@@ -21,10 +21,14 @@
 - [التقنيات](#التقنيات)
 - [هيكل المستودع](#هيكل-المستودع)
 - [التشغيل محلياً](#التشغيل-محلياً)
+- [تشغيل كل جزء لوحده](#تشغيل-كل-جزء-لوحده)
 - [متغيرات البيئة](#متغيرات-البيئة)
 - [الأوامر](#الأوامر)
 - [الواجهة البرمجية](#الواجهة-البرمجية)
 - [الاختبارات](#الاختبارات)
+- [الحسابات التجريبية](#الحسابات-التجريبية)
+- [رابط العرض وتطبيق الموبايل](#رابط-العرض-وتطبيق-الموبايل)
+- [القيود الحالية](#القيود-الحالية)
 - [الفريق وتقسيم العمل](#الفريق-وتقسيم-العمل)
 - [طريقة العمل](#طريقة-العمل)
 
@@ -138,13 +142,47 @@ npx prisma migrate deploy        # إنشاء الجداول
 npm run db:seed                  # الأقسام، المواضيع، الحساب الرسمي، والمدير
 cd ..
 
-npm run dev:api                  # http://localhost:3000/api/v1  و /docs
+npm run dev:api                  # http://localhost:3000/api/v1  و /api/docs
 npm run dev:web                  # http://localhost:3001
 ```
 
 بيانات تجريبية: `SEED_DEMO=true` لحسابات تجريبية قليلة، أو `SEED_SHOWCASE=true` لمنصة كاملة بالصور للعرض المحلي
 (كلمة السر من `DEMO_PASSWORD`). الدليل الكامل خطوة بخطوة، مع تشغيل التطبيق على هاتف حقيقي:
 [`docs/RUN-LOCALLY.md`](docs/RUN-LOCALLY.md).
+
+## تشغيل كل جزء لوحده
+
+كل جزء يعمل من مجلده. أول `npm install` يثبّت المكتبات ويبني `packages/shared` ويولّد Prisma Client.
+
+**Backend (NestJS):**
+
+```bash
+cd backend
+npm install
+npx prisma migrate deploy        # إنشاء الجداول
+npm run db:seed                  # الأقسام والمواضيع والحساب الرسمي والمدير
+npm run start:dev                # http://localhost:3000/api/v1
+```
+
+البيانات التجريبية: ضع `SEED_DEMO=true` و `DEMO_PASSWORD` في `backend/.env` ثم أعد `npm run db:seed`.
+
+**Frontend (Next.js):**
+
+```bash
+cd frontend
+npm install
+npm run dev                      # http://localhost:3001
+```
+
+**Mobile (Expo / React Native):**
+
+```bash
+cd mobile
+npm install
+npx expo start                   # امسح رمز QR بتطبيق Expo Go، أو اضغط a لمحاكي Android
+```
+
+على هاتف حقيقي ضع عنوان IP الجهاز على الشبكة في `mobile/.env` بدل `localhost`.
 
 ## متغيرات البيئة
 
@@ -174,16 +212,59 @@ npm run dev:web                  # http://localhost:3001
 
 ## الواجهة البرمجية
 
-- التوثيق التفاعلي (Swagger): `http://localhost:3000/api/docs`، مع زر Authorize لتجربة المسارات المحمية.
-- أمثلة: `POST /api/v1/auth/signup`، `GET /api/v1/posts?sectionId=&sort=`، `POST /api/v1/events/:id/applications`،
-  `GET /api/v1/users/me/cv/pdf`، `GET /api/v1/highlights/current`، `GET /api/v1/admin/stats`.
-- حدود الطلبات لكل عنوان IP، وأقسى على مسارات المصادقة.
+- **Swagger:** `http://localhost:3000/api/docs`، مع زر Authorize لتجربة المسارات المحمية (Bearer token).
+- **Postman:** [`docs/postman/wathiq.postman_collection.json`](docs/postman/wathiq.postman_collection.json)
+  (Collection v2.1، 137 طلباً مع أمثلة). المتغيرات: `{{baseUrl}}` (افتراضياً `http://localhost:3000`) و
+  `{{accessToken}}` الذي يُنسخ من رد `POST /auth/login`.
+- كل المسارات تبدأ بـ `/api/v1`. حدود الطلبات لكل عنوان IP، وأقسى على مسارات المصادقة.
+
+| المجال | أهم المسارات |
+|---|---|
+| المصادقة | `POST /auth/signup` · `POST /auth/signup/verify` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `POST /auth/password/forgot` · `POST /auth/password/reset` · `GET /auth/me` |
+| المستخدمون | `GET /users/:id` · `PATCH /users/me/profile` · `PATCH /users/me/privacy` · `PUT /users/me/interests` · `POST /users/:id/follow` · `GET /users/me/following` |
+| التوثيق | `POST /verification-requests` · `GET /verification-requests/me` · `POST /verification-requests/:id/approve` · `POST /verification-requests/:id/reject` |
+| الأقسام والمنشورات | `GET /sections` · `GET /posts` · `POST /posts` · `PATCH /posts/:id` · `DELETE /posts/:id` · `POST /posts/:id/upvote` · `GET /users/me/posts` |
+| التعليقات | `GET /posts/:id/comments` · `POST /posts/:id/comments` · `DELETE /comments/:id` |
+| الفعاليات | `GET /events` · `POST /events` · `PATCH /events/:id` · `POST /events/:id/close` · `POST /events/:id/cancel` · `POST /events/:id/clone` |
+| طلبات التطوع | `POST /events/:id/applications` · `GET /events/:id/applications` · `POST /event-applications/:id/accept` · `POST /event-applications/:id/reject` · `POST /event-applications/:id/withdraw` |
+| الأثر والتقييم والشارات | `POST /events/:id/documentation` · `PUT /ratings` · `POST /badges` · `POST /badges/:id/approve` · `GET /badges/verify/:code` |
+| الفرق والتعاون | `POST /team-memberships` · `POST /posts/:id/collaborations` · `POST /publish-requests` |
+| الإشعارات | `GET /notifications` · `GET /notifications/unread-count` · `POST /notifications/read-all` · `POST /push-devices` |
+| البحث والدليل | `GET /search/accounts` · `GET /search/people` · `GET /search/directory` · `GET /highlights/current` |
+| السيرة التطوعية | `GET /users/me/cv` · `GET /users/me/cv/pdf` · `POST /users/me/cv/share` · `GET /cv/public/:token` |
+| الإدارة والإحصائيات | `GET /admin/reports` · `POST /admin/posts/:id/hide` · `POST /admin/users/:id/suspend` · `GET /admin/stats` · `GET /users/me/stats` |
+| الملفات | `POST /uploads/images` · `GET /files/public/:key` · `GET /files/private/:key` |
 
 ## الاختبارات
 
 - **الخادم:** اختبارات وحدة واختبارات e2e على قاعدة بيانات منفصلة اسمها ينتهي بـ `_test` (في `backend/.env.test`).
   بعد أي migration جديدة تُطبَّق عليها أيضاً: `DATABASE_URL=<test url> npx prisma migrate deploy`.
 - **الموبايل:** فحص الأنواع، اختبارات عميل الاتصال، وبناء حزمتي Android و iOS بـ `expo export`.
+
+## الحسابات التجريبية
+
+تُنشأ تلقائياً بسكربت الـ seed (`SEED_DEMO=true` و `DEMO_PASSWORD` في `backend/.env`، ثم `npm run db:seed` من `backend/`).
+كلها تشترك بنفس كلمة السر.
+
+| الحساب | البريد | كلمة السر |
+|---|---|---|
+| مدير المنصة | `demo-admin@wathiq.local` | `DEMO_PASSWORD_VALUE` |
+| جمعية موثّقة | `demo-hope@wathiq.local` | `DEMO_PASSWORD_VALUE` |
+| فريق موثّق | `demo-green@wathiq.local` | `DEMO_PASSWORD_VALUE` |
+| متطوع | `demo-volunteer@wathiq.local` | `DEMO_PASSWORD_VALUE` |
+
+## رابط العرض وتطبيق الموبايل
+
+- **Demo URL:** DEMO_URL_VALUE
+- **Mobile (APK / Expo):** MOBILE_LINK_VALUE
+
+## القيود الحالية
+
+- التحقق عبر الرسائل النصية (SMS) غير مفعّل بعد، والتسجيل يتم بالبريد الإلكتروني.
+- الملفات تُخزَّن محلياً على الخادم، ولا يوجد تخزين سحابي بعد.
+- إشعارات الهاتف (Push) تحتاج `PUSH_ENABLED=true` ومعرّف مشروع EAS حتى تصل فعلياً.
+- الواجهة باللغة العربية فقط.
+- لا يوجد دفع أو تبرعات داخل المنصة.
 
 ## الفريق وتقسيم العمل
 

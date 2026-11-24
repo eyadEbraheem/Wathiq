@@ -1,0 +1,14 @@
+flowchart TD
+A[Client Request] --> B[NestJS API]
+B --> C{Authentication Required?}
+C -- Yes --> D[Validate JWT and Role]
+D --> E{Authorized?}
+E -- No --> X[401 or 403]
+E -- Yes --> F[Validate DTO and Business Rules]
+C -- No --> F
+F --> G{Valid?}
+G -- No --> Y[400 Validation Error]
+G -- Yes --> H[Service Layer]
+H --> I[(PostgreSQL via Prisma)]
+I --> J[Structured Response]
+J --> K[Client UI Update]

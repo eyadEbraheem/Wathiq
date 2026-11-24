@@ -1,0 +1,14 @@
+sequenceDiagram
+actor Volunteer
+participant Client
+participant API as NestJS
+participant DB as PostgreSQL
+Volunteer->>Client: Select event and role
+Client->>API: POST application
+API->>API: Authenticate and validate
+API->>DB: Check status, capacity, eligibility
+DB-->>API: Eligibility result
+API->>DB: Persist application
+DB-->>API: Saved application
+API-->>Client: Application response
+Client-->>Volunteer: Display status
