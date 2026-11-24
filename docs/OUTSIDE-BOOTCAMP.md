@@ -377,3 +377,25 @@ Swagger بيضل على `/docs`.
   بـ `pako` (`inflateRaw` مع `toText`). المفتاح العام من `EXPO_PUBLIC_CV_SIGNING_PUBLIC_KEY`
   (نفس `GET /cv/signing-key`).
 - مع الإنترنت التطبيق بيعرض السيرة الحالية من السيرفر. النسخة الموقّعة بس بلا نت، ومع تاريخها.
+
+## 24. تجهيز الاستضافة: Render و Vercel و Supabase
+
+**ليش؟** البوتكامب ما كان فيه نشر. وعلى الاستضافة المجانية في 3 مشاكل ما بتبين محلياً: قرص Render
+بينمسح مع كل نشر (فالصور بتضيع)، وكل طلبات الموقع بتوصل للـ API من سيرفر Vercel (فحد الطلبات بيصير
+واحد لكل الزوار)، و Vercel بيرفض أي طلب أكبر من حوالي 4.5 MB (وصور الموبايل غالباً أكبر). وقواعد
+المشروع (`docs/CONVENTIONS.md`) أصلاً بتطلب تخزين الملفات بـ object storage. **ما في ولا حزمة جديدة.**
+
+**كيف؟** الخطوات كاملة بـ `docs/DEPLOY.md`.
+- **التخزين:** `api/src/storage/s3-storage.driver.ts` بيحفظ بأي تخزين متوافق مع S3 (Supabase Storage، R2، AWS، MinIO)
+  عن طريق `fetch` الجاهز بـ Node، مع توقيع AWS Signature V4 مكتوب بإيدنا بـ `node:crypto`
+  (`s3-signature.ts`، ومجرّب على مثال التوثيق الرسمي تبع AWS بـ `s3-signature.spec.ts`). بدل حزمة
+  `@aws-sdk/client-s3` الكبيرة. بيختاره `STORAGE_DRIVER=s3`، والمحلي ضل متل ما هو. الـ bucket خاص،
+  والملفات بتنعرض عن طريق الـ API متل قبل، فما تغيّر ولا رابط.
+- **IP الزائر:** `TRUST_PROXY` بـ `main.ts` ليقرأ الـ API الـ IP الحقيقي من خلف proxy تبع Render.
+  والموقع بيبعت IP الزائر بهيدر `x-client-ip`، والـ API بيصدّقه بس إذا معه `x-proxy-secret` = نفس
+  `WEB_PROXY_SECRET` (`common/utils/client-ip.ts`). بدون السر، الهيدر بيتجاهل.
+- **تصغير الصور:** `web/src/components/layout/ImageShrinker.tsx` بيصغّر أي صورة أكبر من 700 KB لحظة
+  ما تنختار، بالمتصفح نفسه (`canvas`)، لـ 1600px و JPEG. وإذا انبعت الفورم قبل ما يخلص، بيستنى
+  وبيرجع يبعته. صورة 11 MB صارت 0.8 MB بالتجربة.
+- **`render.yaml`:** Blueprint بيعمل قاعدة البيانات وخدمة الـ API مع كل المتغيّرات. كل تشغيل بيطبّق
+  الـ migrations وبيشغّل الـ seed (آمن يتكرّر).
