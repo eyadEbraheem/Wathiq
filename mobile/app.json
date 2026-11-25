@@ -4,6 +4,7 @@
     "slug": "wathiq",
     "scheme": "wathiq",
     "version": "0.1.0",
+    "icon": "./assets/icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -12,7 +13,11 @@
     },
     "android": {
       "package": "org.wathiq.mobile",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#052E4E"
+      }
     },
     "plugins": [
       "expo-secure-store",
@@ -22,7 +27,6 @@
         "expo-image-picker",
         {
           "photosPermission": "اختر الصور التي تريد إرفاقها في واثق",
-          "cameraPermission": false,
           "microphonePermission": false
         }
       ],

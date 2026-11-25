@@ -664,7 +664,10 @@ export function MyStats() {
                 onPress={async () => {
                   setExporting(true);
                   try {
-                    const uri = `${FileSystem.Paths.cache}my-campaigns-${period}.csv`;
+                    const uri = new FileSystem.File(
+                      FileSystem.Paths.cache,
+                      `my-campaigns-${period}.csv`,
+                    ).uri;
                     await downloadAuthenticated(
                       `/users/me/stats/campaigns.csv?period=${period}`,
                       uri,
