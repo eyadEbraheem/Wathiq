@@ -79,7 +79,15 @@ export class ApiError extends Error {
     super(message);
   }
 }
-async function send(path: string, init: RequestInit, token?: string) {
+// Normal requests give up after 30 s; uploads and downloads get longer on slow connections.
+const TIMEOUT_MS = 30_000;
+const LONG_TIMEOUT_MS = 180_000;
+async function send(
+  path: string,
+  init: RequestInit,
+  token?: string,
+  timeoutMs = TIMEOUT_MS,
+) {
   if (!BASE)
     throw new Error(
       'أضف عنوان الخادم إلى EXPO_PUBLIC_API_URL ثم أعد تشغيل التطبيق.',
@@ -89,7 +97,7 @@ async function send(path: string, init: RequestInit, token?: string) {
   if (typeof init.body === 'string')
     headers.set('Content-Type', 'application/json');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(`${BASE}${path}`, {
       ...init,
@@ -152,14 +160,15 @@ export async function api<T>(
           ? undefined
           : JSON.stringify(body),
   };
+  const timeoutMs = body instanceof FormData ? LONG_TIMEOUT_MS : TIMEOUT_MS;
   const used = anonymous ? undefined : tokens?.accessToken;
-  let res = await send(path, init, used);
+  let res = await send(path, init, used, timeoutMs);
   if (!anonymous && generation !== epoch)
     throw new ApiError(401, 'انتهت الجلسة.');
   if (res.status === 401 && !anonymous && tokens) {
     if (tokens.accessToken === used) await renew();
     if (generation !== epoch) throw new ApiError(401, 'انتهت الجلسة.');
-    res = await send(path, init, tokens?.accessToken);
+    res = await send(path, init, tokens?.accessToken, timeoutMs);
   }
   if (!anonymous && generation !== epoch)
     throw new ApiError(401, 'انتهت الجلسة.');
@@ -184,9 +193,18 @@ export async function downloadAuthenticated(path: string, targetUri: string) {
       'أضف عنوان الخادم إلى EXPO_PUBLIC_API_URL ثم أعد تشغيل التطبيق.',
     );
   if (!tokens) throw new ApiError(401, 'سجّل الدخول للمتابعة.');
-  const result = await fetch(`${BASE}${path}`, {
-    headers: { Authorization: `Bearer ${tokens.accessToken}` },
-  });
+  // Same session handling as api(): renew a token that is about to expire, retry once on 401.
+  const epoch = generation;
+  if (Date.parse(tokens.accessTokenExpiresAt) < Date.now() + 30000)
+    await renew();
+  if (generation !== epoch) throw new ApiError(401, 'انتهت الجلسة.');
+  const used = tokens?.accessToken;
+  let result = await send(path, {}, used, LONG_TIMEOUT_MS);
+  if (result.status === 401 && tokens) {
+    if (tokens.accessToken === used) await renew();
+    if (generation !== epoch) throw new ApiError(401, 'انتهت الجلسة.');
+    result = await send(path, {}, tokens?.accessToken, LONG_TIMEOUT_MS);
+  }
   if (!result.ok) throw new ApiError(result.status, 'تعذّر تنزيل الملف.');
   const bytes = new Uint8Array(await result.arrayBuffer());
   const base64 = fromByteArray(bytes);
