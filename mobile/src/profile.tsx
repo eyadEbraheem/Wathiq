@@ -892,7 +892,10 @@ export function Cv() {
             <Button
               title="تصدير ومشاركة PDF"
               onPress={async () => {
-                const uri = `${FileSystem.Paths.cache}wathiq-cv-${cv.person.id}.pdf`;
+                const uri = new FileSystem.File(
+                  FileSystem.Paths.cache,
+                  `wathiq-cv-${cv.person.id}.pdf`,
+                ).uri;
                 await downloadAuthenticated('/users/me/cv/pdf', uri);
                 if (await Sharing.isAvailableAsync())
                   await Sharing.shareAsync(uri, {
