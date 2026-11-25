@@ -207,3 +207,47 @@ test('anonymous auth requests never attach the previous bearer', async () => {
   await api.api('/auth/login', 'POST', {}, true);
   assert.equal(bearer, null);
 });
+
+test('file downloads renew an expired access token before fetching', async () => {
+  const calls = [];
+  const { api } = setup(
+    async (url, init) => {
+      if (url.endsWith('/auth/refresh')) {
+        calls.push('refresh');
+        return json(session('new'));
+      }
+      calls.push(`${url} ${init.headers.get('Authorization')}`);
+      return new Response('%PDF', { status: 200 });
+    },
+    session('old', Date.now() - 1000),
+  );
+  await api.restoreSession();
+  // Writing the file needs the native file system, which this test does not load.
+  await api
+    .downloadAuthenticated('/users/me/cv/pdf', 'file:///cache/cv.pdf')
+    .catch(() => {});
+  assert.deepEqual(calls, [
+    'refresh',
+    'https://api.test/api/v1/users/me/cv/pdf Bearer new',
+  ]);
+});
+
+test('file downloads retry once with a renewed token after a 401', async () => {
+  const calls = [];
+  const { api } = setup(async (url, init) => {
+    if (url.endsWith('/auth/refresh')) {
+      calls.push('refresh');
+      return json(session('new'));
+    }
+    const auth = init.headers.get('Authorization');
+    calls.push(auth);
+    return auth === 'Bearer old'
+      ? json({ message: 'expired' }, 401)
+      : new Response('%PDF', { status: 200 });
+  }, session('old'));
+  await api.restoreSession();
+  await api
+    .downloadAuthenticated('/users/me/cv/pdf', 'file:///cache/cv.pdf')
+    .catch(() => {});
+  assert.deepEqual(calls, ['Bearer old', 'refresh', 'Bearer new']);
+});
